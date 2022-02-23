@@ -1,0 +1,935 @@
+{"label":"fromloc","pattern":"boston"}
+{"label":"fromloc","pattern":"pittsburgh"}
+{"label":"fromloc","pattern":"san francisco"}
+{"label":"fromloc","pattern":"washington"}
+{"label":"fromloc","pattern":"tacoma"}
+{"label":"fromloc","pattern":"columbus"}
+{"label":"fromloc","pattern":"cleveland"}
+{"label":"fromloc","pattern":"dallas"}
+{"label":"fromloc","pattern":"san diego"}
+{"label":"fromloc","pattern":"denver"}
+{"label":"fromloc","pattern":"baltimore"}
+{"label":"fromloc","pattern":"atlanta"}
+{"label":"fromloc","pattern":"new york"}
+{"label":"fromloc","pattern":"philadelphia"}
+{"label":"fromloc","pattern":"st. louis"}
+{"label":"fromloc","pattern":"orlando airport"}
+{"label":"fromloc","pattern":"indianapolis"}
+{"label":"fromloc","pattern":"charlotte"}
+{"label":"fromloc","pattern":"newark"}
+{"label":"fromloc","pattern":"toronto"}
+{"label":"fromloc","pattern":"burbank"}
+{"label":"fromloc","pattern":"philadelphia airport"}
+{"label":"fromloc","pattern":"seattle"}
+{"label":"fromloc","pattern":"general mitchell international"}
+{"label":"fromloc","pattern":"oakland"}
+{"label":"fromloc","pattern":"san jose"}
+{"label":"fromloc","pattern":"los angeles international airport"}
+{"label":"fromloc","pattern":"houston"}
+{"label":"fromloc","pattern":"mco"}
+{"label":"fromloc","pattern":"love field"}
+{"label":"fromloc","pattern":"kansas city"}
+{"label":"fromloc","pattern":"st. petersburg"}
+{"label":"fromloc","pattern":"milwaukee"}
+{"label":"fromloc","pattern":"orlando"}
+{"label":"fromloc","pattern":"memphis"}
+{"label":"fromloc","pattern":"phoenix"}
+{"label":"fromloc","pattern":"minneapolis"}
+{"label":"fromloc","pattern":"pittsburgh airport"}
+{"label":"fromloc","pattern":"dallas fort worth"}
+{"label":"fromloc","pattern":"tampa"}
+{"label":"fromloc","pattern":"chicago"}
+{"label":"fromloc","pattern":"las vegas"}
+{"label":"fromloc","pattern":"long beach"}
+{"label":"fromloc","pattern":"logan"}
+{"label":"fromloc","pattern":"nashville"}
+{"label":"fromloc","pattern":"miami"}
+{"label":"fromloc","pattern":"new jersey"}
+{"label":"fromloc","pattern":"salt lake city"}
+{"label":"fromloc","pattern":"detroit"}
+{"label":"fromloc","pattern":"los angeles"}
+{"label":"fromloc","pattern":"cincinnati"}
+{"label":"fromloc","pattern":"dc"}
+{"label":"fromloc","pattern":"colorado"}
+{"label":"fromloc","pattern":"ontario"}
+{"label":"fromloc","pattern":"new york city"}
+{"label":"fromloc","pattern":"san diego airport"}
+{"label":"fromloc","pattern":"st. paul"}
+{"label":"fromloc","pattern":"florida"}
+{"label":"fromloc","pattern":"montreal"}
+{"label":"fromloc","pattern":"quebec"}
+{"label":"fromloc","pattern":"san francisco airport"}
+{"label":"fromloc","pattern":"fort worth"}
+{"label":"fromloc","pattern":"atlanta airport"}
+{"label":"fromloc","pattern":"la"}
+{"label":"fromloc","pattern":"north carolina"}
+{"label":"fromloc","pattern":"la guardia"}
+{"label":"fromloc","pattern":"jfk"}
+{"label":"fromloc","pattern":"washington airport"}
+{"label":"fromloc","pattern":"boston airport"}
+{"label":"fromloc","pattern":"general mitchell"}
+{"label":"fromloc","pattern":"california"}
+{"label":"fromloc","pattern":"dallas fort worth international"}
+{"label":"fromloc","pattern":"stapleton international airport"}
+{"label":"fromloc","pattern":"sfo"}
+{"label":"fromloc","pattern":"la guardia airport"}
+{"label":"fromloc","pattern":"oakland airport"}
+{"label":"fromloc","pattern":"missouri"}
+{"label":"fromloc","pattern":"dallas fort worth airport"}
+{"label":"fromloc","pattern":"denver airport"}
+{"label":"fromloc","pattern":"dulles"}
+{"label":"fromloc","pattern":"atlanta 's"}
+{"label":"fromloc","pattern":"ohio"}
+{"label":"fromloc","pattern":"westchester county"}
+{"label":"fromloc","pattern":"orlando international"}
+{"label":"fromloc","pattern":"general mitchell international airport"}
+{"label":"fromloc","pattern":"new york 's"}
+{"label":"fromloc","pattern":"bwi"}
+{"label":"fromloc","pattern":"salt lake city airport"}
+{"label":"fromloc","pattern":"san francisco international airport"}
+{"label":"fromloc","pattern":"toronto airport"}
+{"label":"fromloc","pattern":"dallas airport"}
+{"label":"fromloc","pattern":"dfw"}
+{"label":"fromloc","pattern":"tennessee"}
+{"label":"fromloc","pattern":"toronto international airport"}
+{"label":"fromloc","pattern":"texas"}
+{"label":"fromloc","pattern":"oak"}
+{"label":"depart_time","pattern":"838 am"}
+{"label":"depart_time","pattern":"morning"}
+{"label":"depart_time","pattern":"755 am"}
+{"label":"depart_time","pattern":"after"}
+{"label":"depart_time","pattern":"6 pm"}
+{"label":"depart_time","pattern":"before"}
+{"label":"depart_time","pattern":"7 pm"}
+{"label":"depart_time","pattern":"2 o'clock pm"}
+{"label":"depart_time","pattern":"720 am"}
+{"label":"depart_time","pattern":"evening"}
+{"label":"depart_time","pattern":"8 pm"}
+{"label":"depart_time","pattern":"6 o'clock"}
+{"label":"depart_time","pattern":"12 pm"}
+{"label":"depart_time","pattern":"early"}
+{"label":"depart_time","pattern":"5 pm"}
+{"label":"depart_time","pattern":"8 am"}
+{"label":"depart_time","pattern":"12"}
+{"label":"depart_time","pattern":"2"}
+{"label":"depart_time","pattern":"afternoon"}
+{"label":"depart_time","pattern":"night"}
+{"label":"depart_time","pattern":"10 am"}
+{"label":"depart_time","pattern":"2 pm"}
+{"label":"depart_time","pattern":"6 o'clock pm"}
+{"label":"depart_time","pattern":"noon"}
+{"label":"depart_time","pattern":"1024"}
+{"label":"depart_time","pattern":"12 noon"}
+{"label":"depart_time","pattern":"approximately"}
+{"label":"depart_time","pattern":"615 pm"}
+{"label":"depart_time","pattern":"9 am"}
+{"label":"depart_time","pattern":"530 pm"}
+{"label":"depart_time","pattern":"7 am"}
+{"label":"depart_time","pattern":"9 o'clock"}
+{"label":"depart_time","pattern":"230"}
+{"label":"depart_time","pattern":"430"}
+{"label":"depart_time","pattern":"around"}
+{"label":"depart_time","pattern":"7 o'clock"}
+{"label":"depart_time","pattern":"2134"}
+{"label":"depart_time","pattern":"7 o'clock am"}
+{"label":"depart_time","pattern":"eight"}
+{"label":"depart_time","pattern":"4"}
+{"label":"depart_time","pattern":"late"}
+{"label":"depart_time","pattern":"3 pm"}
+{"label":"depart_time","pattern":"10 pm"}
+{"label":"depart_time","pattern":"midnight"}
+{"label":"depart_time","pattern":"afterwards"}
+{"label":"depart_time","pattern":"420"}
+{"label":"depart_time","pattern":"9 pm"}
+{"label":"depart_time","pattern":"4 pm"}
+{"label":"depart_time","pattern":"8 o'clock pm"}
+{"label":"depart_time","pattern":"nights"}
+{"label":"depart_time","pattern":"8 o'clock"}
+{"label":"depart_time","pattern":"no later than"}
+{"label":"depart_time","pattern":"838"}
+{"label":"depart_time","pattern":"555"}
+{"label":"depart_time","pattern":"5 o'clock pm"}
+{"label":"depart_time","pattern":"1026"}
+{"label":"depart_time","pattern":"530"}
+{"label":"depart_time","pattern":"630 am"}
+{"label":"depart_time","pattern":"1 o'clock"}
+{"label":"depart_time","pattern":"3 o'clock"}
+{"label":"depart_time","pattern":"5"}
+{"label":"depart_time","pattern":"718 am"}
+{"label":"depart_time","pattern":"815 am"}
+{"label":"depart_time","pattern":"7"}
+{"label":"depart_time","pattern":"later"}
+{"label":"depart_time","pattern":"2100"}
+{"label":"depart_time","pattern":"5 o'clock"}
+{"label":"depart_time","pattern":"650"}
+{"label":"depart_time","pattern":"1600 hours"}
+{"label":"depart_time","pattern":"noontime"}
+{"label":"depart_time","pattern":"12 o'clock noon"}
+{"label":"depart_time","pattern":"5 o'clock am"}
+{"label":"depart_time","pattern":"1220 pm"}
+{"label":"depart_time","pattern":"mornings"}
+{"label":"depart_time","pattern":"110 pm"}
+{"label":"depart_time","pattern":"1 pm"}
+{"label":"depart_time","pattern":"430 pm"}
+{"label":"depart_time","pattern":"324 pm"}
+{"label":"depart_time","pattern":"823"}
+{"label":"depart_time","pattern":"934 pm"}
+{"label":"depart_time","pattern":"4 o'clock"}
+{"label":"depart_time","pattern":"12 o'clock"}
+{"label":"depart_time","pattern":"225 pm"}
+{"label":"depart_time","pattern":"10 o'clock"}
+{"label":"depart_time","pattern":"130"}
+{"label":"depart_time","pattern":"about"}
+{"label":"depart_time","pattern":"6"}
+{"label":"depart_time","pattern":"pm"}
+{"label":"depart_time","pattern":"3"}
+{"label":"depart_time","pattern":"8 o'clock am"}
+{"label":"depart_time","pattern":"8"}
+{"label":"depart_time","pattern":"755"}
+{"label":"depart_time","pattern":"1045 am"}
+{"label":"depart_time","pattern":"11 o'clock am"}
+{"label":"depart_time","pattern":"am"}
+{"label":"depart_time","pattern":"by"}
+{"label":"depart_time","pattern":"dinnertime"}
+{"label":"depart_time","pattern":"11 pm"}
+{"label":"depart_time","pattern":"one"}
+{"label":"depart_time","pattern":"810 pm"}
+{"label":"depart_time","pattern":"1205"}
+{"label":"depart_time","pattern":"11 am"}
+{"label":"depart_time","pattern":"2 o'clock"}
+{"label":"depart_time","pattern":"late afternoon"}
+{"label":"depart_time","pattern":"9"}
+{"label":"depart_time","pattern":"845"}
+{"label":"depart_time","pattern":"1020 pm"}
+{"label":"depart_time","pattern":"1505"}
+{"label":"depart_time","pattern":"723 pm"}
+{"label":"depart_time","pattern":"630 pm"}
+{"label":"depart_time","pattern":"1700 hours"}
+{"label":"depart_time","pattern":"428"}
+{"label":"depart_time","pattern":"1200 hours"}
+{"label":"depart_time","pattern":"1230 pm"}
+{"label":"depart_time","pattern":"10"}
+{"label":"depart_time","pattern":"3 o'clock pm"}
+{"label":"depart_time","pattern":"earlier"}
+{"label":"depart_time","pattern":"1017"}
+{"label":"depart_time","pattern":"10 o'clock pm"}
+{"label":"depart_time","pattern":"0900"}
+{"label":"depart_time","pattern":"645 am"}
+{"label":"depart_time","pattern":"305"}
+{"label":"depart_time","pattern":"1300 hours"}
+{"label":"depart_time","pattern":"1940"}
+{"label":"depart_time","pattern":"afternoons"}
+{"label":"depart_time","pattern":"nighttime"}
+{"label":"depart_time","pattern":"819"}
+{"label":"toloc","pattern":"denver"}
+{"label":"toloc","pattern":"baltimore"}
+{"label":"toloc","pattern":"orlando"}
+{"label":"toloc","pattern":"philadelphia"}
+{"label":"toloc","pattern":"minneapolis"}
+{"label":"toloc","pattern":"dallas"}
+{"label":"toloc","pattern":"los angeles"}
+{"label":"toloc","pattern":"washington"}
+{"label":"toloc","pattern":"san francisco"}
+{"label":"toloc","pattern":"newark"}
+{"label":"toloc","pattern":"bwi"}
+{"label":"toloc","pattern":"pittsburgh"}
+{"label":"toloc","pattern":"boston"}
+{"label":"toloc","pattern":"atlanta"}
+{"label":"toloc","pattern":"milwaukee"}
+{"label":"toloc","pattern":"miami"}
+{"label":"toloc","pattern":"burbank"}
+{"label":"toloc","pattern":"florida"}
+{"label":"toloc","pattern":"dallas fort worth"}
+{"label":"toloc","pattern":"cleveland"}
+{"label":"toloc","pattern":"san diego"}
+{"label":"toloc","pattern":"tacoma"}
+{"label":"toloc","pattern":"dc"}
+{"label":"toloc","pattern":"salt lake city"}
+{"label":"toloc","pattern":"seattle"}
+{"label":"toloc","pattern":"houston"}
+{"label":"toloc","pattern":"phoenix"}
+{"label":"toloc","pattern":"oakland"}
+{"label":"toloc","pattern":"long beach"}
+{"label":"toloc","pattern":"las vegas"}
+{"label":"toloc","pattern":"kansas city"}
+{"label":"toloc","pattern":"la"}
+{"label":"toloc","pattern":"san jose"}
+{"label":"toloc","pattern":"st. louis"}
+{"label":"toloc","pattern":"chicago"}
+{"label":"toloc","pattern":"cincinnati"}
+{"label":"toloc","pattern":"columbus"}
+{"label":"toloc","pattern":"la guardia"}
+{"label":"toloc","pattern":"logan airport"}
+{"label":"toloc","pattern":"tampa"}
+{"label":"toloc","pattern":"ohio"}
+{"label":"toloc","pattern":"st. paul"}
+{"label":"toloc","pattern":"detroit"}
+{"label":"toloc","pattern":"indianapolis"}
+{"label":"toloc","pattern":"general mitchell international"}
+{"label":"toloc","pattern":"new york city"}
+{"label":"toloc","pattern":"westchester county"}
+{"label":"toloc","pattern":"memphis"}
+{"label":"toloc","pattern":"st. petersburg"}
+{"label":"toloc","pattern":"sfo"}
+{"label":"toloc","pattern":"minnesota"}
+{"label":"toloc","pattern":"toronto"}
+{"label":"toloc","pattern":"nashville"}
+{"label":"toloc","pattern":"charlotte"}
+{"label":"toloc","pattern":"love field"}
+{"label":"toloc","pattern":"montreal"}
+{"label":"toloc","pattern":"pennsylvania"}
+{"label":"toloc","pattern":"new york"}
+{"label":"toloc","pattern":"jfk"}
+{"label":"toloc","pattern":"fort worth"}
+{"label":"toloc","pattern":"dfw"}
+{"label":"toloc","pattern":"north carolina"}
+{"label":"toloc","pattern":"california"}
+{"label":"toloc","pattern":"canada"}
+{"label":"toloc","pattern":"salt lake"}
+{"label":"toloc","pattern":"oakland airport"}
+{"label":"toloc","pattern":"ontario international"}
+{"label":"toloc","pattern":"o 'hare"}
+{"label":"toloc","pattern":"philly"}
+{"label":"toloc","pattern":"westchester"}
+{"label":"toloc","pattern":"new jersey"}
+{"label":"toloc","pattern":"colorado"}
+{"label":"toloc","pattern":"denver airport"}
+{"label":"toloc","pattern":"texas"}
+{"label":"toloc","pattern":"tennessee"}
+{"label":"toloc","pattern":"general mitchell international airport"}
+{"label":"toloc","pattern":"michigan"}
+{"label":"toloc","pattern":"san francisco international"}
+{"label":"toloc","pattern":"indiana"}
+{"label":"toloc","pattern":"arizona"}
+{"label":"toloc","pattern":"ontario"}
+{"label":"toloc","pattern":"utah"}
+{"label":"toloc","pattern":"boston airport"}
+{"label":"toloc","pattern":"san francisco airport"}
+{"label":"toloc","pattern":"georgia"}
+{"label":"toloc","pattern":"new york 's"}
+{"label":"toloc","pattern":"atlanta 's"}
+{"label":"toloc","pattern":"stapleton airport"}
+{"label":"toloc","pattern":"logan"}
+{"label":"toloc","pattern":"bay area"}
+{"label":"toloc","pattern":"dulles"}
+{"label":"toloc","pattern":"city of boston"}
+{"label":"toloc","pattern":"nevada"}
+{"label":"toloc","pattern":"atl"}
+{"label":"toloc","pattern":"vegas"}
+{"label":"arrive_time","pattern":"1110"}
+{"label":"arrive_time","pattern":"morning"}
+{"label":"arrive_time","pattern":"by"}
+{"label":"arrive_time","pattern":"noon"}
+{"label":"arrive_time","pattern":"before"}
+{"label":"arrive_time","pattern":"8 pm"}
+{"label":"arrive_time","pattern":"after"}
+{"label":"arrive_time","pattern":"4 o'clock pm"}
+{"label":"arrive_time","pattern":"8"}
+{"label":"arrive_time","pattern":"midnight"}
+{"label":"arrive_time","pattern":"5 pm"}
+{"label":"arrive_time","pattern":"8 o'clock"}
+{"label":"arrive_time","pattern":"4 pm"}
+{"label":"arrive_time","pattern":"around"}
+{"label":"arrive_time","pattern":"230 pm"}
+{"label":"arrive_time","pattern":"7 pm"}
+{"label":"arrive_time","pattern":"early"}
+{"label":"arrive_time","pattern":"12"}
+{"label":"arrive_time","pattern":"1 o'clock"}
+{"label":"arrive_time","pattern":"6 pm"}
+{"label":"arrive_time","pattern":"about"}
+{"label":"arrive_time","pattern":"mealtime"}
+{"label":"arrive_time","pattern":"close"}
+{"label":"arrive_time","pattern":"evening"}
+{"label":"arrive_time","pattern":"630"}
+{"label":"arrive_time","pattern":"1700"}
+{"label":"arrive_time","pattern":"time"}
+{"label":"arrive_time","pattern":"1"}
+{"label":"arrive_time","pattern":"afternoon"}
+{"label":"arrive_time","pattern":"7 o'clock"}
+{"label":"arrive_time","pattern":"1030 am"}
+{"label":"arrive_time","pattern":"1130 am"}
+{"label":"arrive_time","pattern":"12 noon"}
+{"label":"arrive_time","pattern":"12 pm"}
+{"label":"arrive_time","pattern":"11 am"}
+{"label":"arrive_time","pattern":"12 o'clock"}
+{"label":"arrive_time","pattern":"1115 am"}
+{"label":"arrive_time","pattern":"1245 pm"}
+{"label":"arrive_time","pattern":"4"}
+{"label":"arrive_time","pattern":"10 am"}
+{"label":"arrive_time","pattern":"10 pm"}
+{"label":"arrive_time","pattern":"no later than"}
+{"label":"arrive_time","pattern":"2 pm"}
+{"label":"arrive_time","pattern":"night"}
+{"label":"arrive_time","pattern":"lunch time"}
+{"label":"arrive_time","pattern":"one"}
+{"label":"arrive_time","pattern":"9 pm"}
+{"label":"arrive_time","pattern":"10 o'clock"}
+{"label":"arrive_time","pattern":"5 o'clock"}
+{"label":"arrive_time","pattern":"6 o'clock"}
+{"label":"arrive_time","pattern":"dinnertime"}
+{"label":"arrive_time","pattern":"11 pm"}
+{"label":"arrive_time","pattern":"earliest"}
+{"label":"arrive_time","pattern":"210 pm"}
+{"label":"arrive_time","pattern":"1 pm"}
+{"label":"arrive_time","pattern":"1145 am"}
+{"label":"arrive_time","pattern":"near"}
+{"label":"arrive_time","pattern":"445"}
+{"label":"arrive_time","pattern":"515 pm"}
+{"label":"arrive_time","pattern":"5 o'clock pm"}
+{"label":"arrive_time","pattern":"5"}
+{"label":"arrive_time","pattern":"9 o'clock am"}
+{"label":"arrive_time","pattern":"1158 pm"}
+{"label":"arrive_time","pattern":"9 am"}
+{"label":"arrive_time","pattern":"7"}
+{"label":"arrive_time","pattern":"9 o'clock pm"}
+{"label":"arrive_time","pattern":"late afternoon"}
+{"label":"arrive_time","pattern":"2100"}
+{"label":"arrive_time","pattern":"705"}
+{"label":"arrive_time","pattern":"2 o'clock"}
+{"label":"arrive_time","pattern":"8 am"}
+{"label":"arrive_time","pattern":"6"}
+{"label":"arrive_time","pattern":"vicinity"}
+{"label":"arrive_time","pattern":"later"}
+{"label":"arrive_time","pattern":"415"}
+{"label":"arrive_time","pattern":"530 pm"}
+{"label":"arrive_time","pattern":"730 pm"}
+{"label":"arrive_time","pattern":"4 o'clock"}
+{"label":"arrive_time","pattern":"1850"}
+{"label":"arrive_time","pattern":"3 o'clock pm"}
+{"label":"arrive_time","pattern":"6 o'clock pm"}
+{"label":"arrive_time","pattern":"8 o'clock am"}
+{"label":"arrive_time","pattern":"12 o'clock noon"}
+{"label":"arrive_time","pattern":"7 o'clock pm"}
+{"label":"arrive_time","pattern":"9 o'clock"}
+{"label":"arrive_time","pattern":"3"}
+{"label":"arrive_time","pattern":"1133 am"}
+{"label":"arrive_time","pattern":"43 pm"}
+{"label":"arrive_time","pattern":"430 pm"}
+{"label":"arrive_time","pattern":"630 pm"}
+{"label":"arrive_time","pattern":"3 pm"}
+{"label":"arrive_time","pattern":"7 am"}
+{"label":"depart_date","pattern":"thursday"}
+{"label":"depart_date","pattern":"tomorrow"}
+{"label":"depart_date","pattern":"tuesday"}
+{"label":"depart_date","pattern":"next"}
+{"label":"depart_date","pattern":"wednesday"}
+{"label":"depart_date","pattern":"sunday"}
+{"label":"depart_date","pattern":"friday"}
+{"label":"depart_date","pattern":"twenty seventh"}
+{"label":"depart_date","pattern":"twenty eighth"}
+{"label":"depart_date","pattern":"december"}
+{"label":"depart_date","pattern":"today"}
+{"label":"depart_date","pattern":"july"}
+{"label":"depart_date","pattern":"seventh"}
+{"label":"depart_date","pattern":"monday"}
+{"label":"depart_date","pattern":"this"}
+{"label":"depart_date","pattern":"april"}
+{"label":"depart_date","pattern":"twenty fifth"}
+{"label":"depart_date","pattern":"august"}
+{"label":"depart_date","pattern":"ninth"}
+{"label":"depart_date","pattern":"saturday"}
+{"label":"depart_date","pattern":"twenty ninth"}
+{"label":"depart_date","pattern":"fourth"}
+{"label":"depart_date","pattern":"fifth"}
+{"label":"depart_date","pattern":"june"}
+{"label":"depart_date","pattern":"eleventh"}
+{"label":"depart_date","pattern":"november"}
+{"label":"depart_date","pattern":"tenth"}
+{"label":"depart_date","pattern":"sixteenth"}
+{"label":"depart_date","pattern":"september"}
+{"label":"depart_date","pattern":"nineteenth"}
+{"label":"depart_date","pattern":"first"}
+{"label":"depart_date","pattern":"thirty first"}
+{"label":"depart_date","pattern":"fifteenth"}
+{"label":"depart_date","pattern":"thirtieth"}
+{"label":"depart_date","pattern":"twenty fourth"}
+{"label":"depart_date","pattern":"1991"}
+{"label":"depart_date","pattern":"twenty third"}
+{"label":"depart_date","pattern":"twelfth"}
+{"label":"depart_date","pattern":"wednesdays"}
+{"label":"depart_date","pattern":"may"}
+{"label":"depart_date","pattern":"four"}
+{"label":"depart_date","pattern":"twentieth"}
+{"label":"depart_date","pattern":"twenty second"}
+{"label":"depart_date","pattern":"seventeenth"}
+{"label":"depart_date","pattern":"second"}
+{"label":"depart_date","pattern":"saturdays"}
+{"label":"depart_date","pattern":"one"}
+{"label":"depart_date","pattern":"eighteenth"}
+{"label":"depart_date","pattern":"sixth"}
+{"label":"depart_date","pattern":"third"}
+{"label":"depart_date","pattern":"october"}
+{"label":"depart_date","pattern":"january"}
+{"label":"depart_date","pattern":"seven"}
+{"label":"depart_date","pattern":"1992"}
+{"label":"depart_date","pattern":"eight"}
+{"label":"depart_date","pattern":"fifteen"}
+{"label":"depart_date","pattern":"twenty six"}
+{"label":"depart_date","pattern":"eighth"}
+{"label":"depart_date","pattern":"year"}
+{"label":"depart_date","pattern":"tuesdays"}
+{"label":"depart_date","pattern":"wednesday 's"}
+{"label":"depart_date","pattern":"sixteen"}
+{"label":"depart_date","pattern":"following"}
+{"label":"depart_date","pattern":"twenty"}
+{"label":"depart_date","pattern":"twenty two"}
+{"label":"depart_date","pattern":"weekday"}
+{"label":"depart_date","pattern":"tonight"}
+{"label":"depart_date","pattern":"after"}
+{"label":"depart_date","pattern":"twenty sixth"}
+{"label":"depart_date","pattern":"thirteenth"}
+{"label":"depart_date","pattern":"fourteenth"}
+{"label":"depart_date","pattern":"twenty first"}
+{"label":"depart_date","pattern":"fridays"}
+{"label":"depart_date","pattern":"thursdays"}
+{"label":"depart_date","pattern":"sundays"}
+{"label":"depart_date","pattern":"march"}
+{"label":"depart_date","pattern":"february"}
+{"label":"depart_date","pattern":"mondays"}
+{"label":"depart_date","pattern":"same"}
+{"label":"depart_date","pattern":"eleven"}
+{"label":"depart_date","pattern":"the day after tomorrow"}
+{"label":"depart_date","pattern":"1993"}
+{"label":"depart_date","pattern":"sunday 's"}
+{"label":"depart_date","pattern":"two"}
+{"label":"depart_date","pattern":"six"}
+{"label":"depart_date","pattern":"coming"}
+{"label":"depart_date","pattern":"twenty one"}
+{"label":"depart_date","pattern":"three"}
+{"label":"depart_date","pattern":"friday 's"}
+{"label":"depart_date","pattern":"seventeen"}
+{"label":"flight_time","pattern":"arrival time"}
+{"label":"flight_time","pattern":"times"}
+{"label":"flight_time","pattern":"flight times"}
+{"label":"flight_time","pattern":"schedule"}
+{"label":"flight_time","pattern":"flight schedule"}
+{"label":"flight_time","pattern":"time"}
+{"label":"flight_time","pattern":"departure time"}
+{"label":"flight_time","pattern":"flight schedules"}
+{"label":"flight_time","pattern":"time of arrival"}
+{"label":"flight_time","pattern":"when"}
+{"label":"flight_time","pattern":"schedule for flights"}
+{"label":"flight_time","pattern":"times of your flights"}
+{"label":"flight_time","pattern":"times of flight"}
+{"label":"flight_time","pattern":"departure times"}
+{"label":"cost_relative","pattern":"cheapest"}
+{"label":"cost_relative","pattern":"under"}
+{"label":"cost_relative","pattern":"least expensive"}
+{"label":"cost_relative","pattern":"less"}
+{"label":"cost_relative","pattern":"most expensive"}
+{"label":"cost_relative","pattern":"highest"}
+{"label":"cost_relative","pattern":"lowest"}
+{"label":"cost_relative","pattern":"lowest price"}
+{"label":"cost_relative","pattern":"lowest cost"}
+{"label":"round_trip","pattern":"round trip"}
+{"label":"round_trip","pattern":"one way"}
+{"label":"round_trip","pattern":"round trips"}
+{"label":"round_trip","pattern":"return"}
+{"label":"fare_amount","pattern":"1000 dollars"}
+{"label":"fare_amount","pattern":"329 dollars"}
+{"label":"fare_amount","pattern":"100"}
+{"label":"fare_amount","pattern":"1288"}
+{"label":"fare_amount","pattern":"466 dollars"}
+{"label":"fare_amount","pattern":"1100 dollars"}
+{"label":"fare_amount","pattern":"416 dollars"}
+{"label":"fare_amount","pattern":"124 dollars"}
+{"label":"fare_amount","pattern":"200 dollars"}
+{"label":"fare_amount","pattern":"932 dollars"}
+{"label":"fare_amount","pattern":"150 dollars"}
+{"label":"fare_amount","pattern":"300 dollars"}
+{"label":"fare_amount","pattern":"400 dollars"}
+{"label":"fare_amount","pattern":"415 dollars"}
+{"label":"fare_amount","pattern":"500 dollars"}
+{"label":"fare_amount","pattern":"1500 dollars"}
+{"label":"city_name","pattern":"denver"}
+{"label":"city_name","pattern":"orlando"}
+{"label":"city_name","pattern":"atlanta"}
+{"label":"city_name","pattern":"dallas"}
+{"label":"city_name","pattern":"pittsburgh"}
+{"label":"city_name","pattern":"baltimore"}
+{"label":"city_name","pattern":"san jose"}
+{"label":"city_name","pattern":"tacoma"}
+{"label":"city_name","pattern":"dallas fort worth"}
+{"label":"city_name","pattern":"seattle"}
+{"label":"city_name","pattern":"charlotte"}
+{"label":"city_name","pattern":"minneapolis"}
+{"label":"city_name","pattern":"boston"}
+{"label":"city_name","pattern":"washington"}
+{"label":"city_name","pattern":"westchester county"}
+{"label":"city_name","pattern":"san francisco"}
+{"label":"city_name","pattern":"oakland"}
+{"label":"city_name","pattern":"houston"}
+{"label":"city_name","pattern":"philadelphia"}
+{"label":"city_name","pattern":"cleveland"}
+{"label":"city_name","pattern":"phoenix"}
+{"label":"city_name","pattern":"salt lake city"}
+{"label":"city_name","pattern":"toronto"}
+{"label":"city_name","pattern":"detroit"}
+{"label":"city_name","pattern":"newark"}
+{"label":"city_name","pattern":"las vegas"}
+{"label":"city_name","pattern":"city of boston"}
+{"label":"city_name","pattern":"los angeles"}
+{"label":"city_name","pattern":"chicago"}
+{"label":"city_name","pattern":"new york"}
+{"label":"city_name","pattern":"san diego"}
+{"label":"city_name","pattern":"fort worth"}
+{"label":"city_name","pattern":"montreal"}
+{"label":"city_name","pattern":"st. paul"}
+{"label":"city_name","pattern":"tampa"}
+{"label":"city_name","pattern":"city in dallas"}
+{"label":"city_name","pattern":"nashville"}
+{"label":"city_name","pattern":"indianapolis"}
+{"label":"city_name","pattern":"st. louis"}
+{"label":"stoploc","pattern":"houston"}
+{"label":"stoploc","pattern":"milwaukee"}
+{"label":"stoploc","pattern":"atlanta"}
+{"label":"stoploc","pattern":"dallas"}
+{"label":"stoploc","pattern":"cincinnati"}
+{"label":"stoploc","pattern":"denver"}
+{"label":"stoploc","pattern":"dallas fort worth"}
+{"label":"stoploc","pattern":"los angeles"}
+{"label":"stoploc","pattern":"philadelphia"}
+{"label":"stoploc","pattern":"pittsburgh"}
+{"label":"stoploc","pattern":"st. louis"}
+{"label":"stoploc","pattern":"new york"}
+{"label":"stoploc","pattern":"indianapolis"}
+{"label":"stoploc","pattern":"minneapolis"}
+{"label":"stoploc","pattern":"chicago"}
+{"label":"stoploc","pattern":"washington"}
+{"label":"stoploc","pattern":"dc"}
+{"label":"stoploc","pattern":"charlotte"}
+{"label":"stoploc","pattern":"hartfield"}
+{"label":"stoploc","pattern":"san francisco"}
+{"label":"stoploc","pattern":"phoenix"}
+{"label":"stoploc","pattern":"boston"}
+{"label":"stoploc","pattern":"fort worth"}
+{"label":"stoploc","pattern":"nashville"}
+{"label":"stoploc","pattern":"kansas city"}
+{"label":"class_type","pattern":"first class"}
+{"label":"class_type","pattern":"coach"}
+{"label":"class_type","pattern":"thrift"}
+{"label":"class_type","pattern":"business class"}
+{"label":"class_type","pattern":"coach class"}
+{"label":"class_type","pattern":"economic"}
+{"label":"class_type","pattern":"first"}
+{"label":"airline_name","pattern":"united airlines"}
+{"label":"airline_name","pattern":"united"}
+{"label":"airline_name","pattern":"american airlines"}
+{"label":"airline_name","pattern":"northwest airlines"}
+{"label":"airline_name","pattern":"delta"}
+{"label":"airline_name","pattern":"us air"}
+{"label":"airline_name","pattern":"delta airlines"}
+{"label":"airline_name","pattern":"canadian airlines international"}
+{"label":"airline_name","pattern":"america west"}
+{"label":"airline_name","pattern":"southwest"}
+{"label":"airline_name","pattern":"midwest"}
+{"label":"airline_name","pattern":"continental airlines"}
+{"label":"airline_name","pattern":"eastern airlines"}
+{"label":"airline_name","pattern":"american"}
+{"label":"airline_name","pattern":"american airline"}
+{"label":"airline_name","pattern":"continental"}
+{"label":"airline_name","pattern":"northwest"}
+{"label":"airline_name","pattern":"united airline"}
+{"label":"airline_name","pattern":"delta airline"}
+{"label":"airline_name","pattern":"nationair"}
+{"label":"airline_name","pattern":"trans world airline"}
+{"label":"airline_name","pattern":"tower air"}
+{"label":"airline_name","pattern":"eastern"}
+{"label":"airline_name","pattern":"continental airline"}
+{"label":"airline_name","pattern":"lufthansa"}
+{"label":"airline_name","pattern":"eastern airline"}
+{"label":"airline_name","pattern":"southwest airlines"}
+{"label":"airline_name","pattern":"canadian airlines"}
+{"label":"airline_name","pattern":"lufthansa airlines"}
+{"label":"airline_name","pattern":"northwest airline"}
+{"label":"airline_name","pattern":"midway airlines"}
+{"label":"airline_name","pattern":"delta 's"}
+{"label":"airline_name","pattern":"alaska airlines"}
+{"label":"airline_name","pattern":"usa air"}
+{"label":"airline_name","pattern":"american 's"}
+{"label":"airline_name","pattern":"us airlines"}
+{"label":"airline_name","pattern":"air canada"}
+{"label":"mod","pattern":"most"}
+{"label":"mod","pattern":"smallest"}
+{"label":"mod","pattern":"least"}
+{"label":"mod","pattern":"two"}
+{"label":"mod","pattern":"total"}
+{"label":"mod","pattern":"after"}
+{"label":"mod","pattern":"besides"}
+{"label":"mod","pattern":"instead"}
+{"label":"mod","pattern":"greatest"}
+{"label":"mod","pattern":"doesn 't"}
+{"label":"mod","pattern":"more"}
+{"label":"mod","pattern":"other"}
+{"label":"mod","pattern":"same"}
+{"label":"mod","pattern":"closest"}
+{"label":"mod","pattern":"largest"}
+{"label":"fare_basis_code","pattern":"h"}
+{"label":"fare_basis_code","pattern":"c"}
+{"label":"fare_basis_code","pattern":"q"}
+{"label":"fare_basis_code","pattern":"qw"}
+{"label":"fare_basis_code","pattern":"f"}
+{"label":"fare_basis_code","pattern":"yn"}
+{"label":"fare_basis_code","pattern":"qx"}
+{"label":"fare_basis_code","pattern":"y"}
+{"label":"fare_basis_code","pattern":"m"}
+{"label":"fare_basis_code","pattern":"q fares"}
+{"label":"fare_basis_code","pattern":"fn"}
+{"label":"fare_basis_code","pattern":"qo"}
+{"label":"fare_basis_code","pattern":"k"}
+{"label":"fare_basis_code","pattern":"b"}
+{"label":"fare_basis_code","pattern":"qx fare"}
+{"label":"transport_type","pattern":"limousine"}
+{"label":"transport_type","pattern":"car"}
+{"label":"transport_type","pattern":"car rentals"}
+{"label":"transport_type","pattern":"car rental"}
+{"label":"transport_type","pattern":"limousines"}
+{"label":"transport_type","pattern":"taxi"}
+{"label":"transport_type","pattern":"rental car"}
+{"label":"transport_type","pattern":"air taxi operation"}
+{"label":"transport_type","pattern":"limo"}
+{"label":"transport_type","pattern":"train"}
+{"label":"transport_type","pattern":"rental cars"}
+{"label":"transport_type","pattern":"airport limousine"}
+{"label":"flight_mod","pattern":"shortest"}
+{"label":"flight_mod","pattern":"latest"}
+{"label":"flight_mod","pattern":"earliest"}
+{"label":"flight_mod","pattern":"first"}
+{"label":"flight_mod","pattern":"last"}
+{"label":"flight_mod","pattern":"cheap"}
+{"label":"flight_mod","pattern":"overnight"}
+{"label":"flight_mod","pattern":"weekday"}
+{"label":"flight_mod","pattern":"early"}
+{"label":"flight_mod","pattern":"lastest"}
+{"label":"flight_mod","pattern":"during the week"}
+{"label":"flight_mod","pattern":"only weekdays"}
+{"label":"flight_mod","pattern":"late"}
+{"label":"flight_mod","pattern":"next"}
+{"label":"flight_mod","pattern":"earliest possible time"}
+{"label":"flight_mod","pattern":"red eye"}
+{"label":"flight_mod","pattern":"arriving"}
+{"label":"flight_mod","pattern":"during week days"}
+{"label":"flight_mod","pattern":"weekdays"}
+{"label":"flight_mod","pattern":"day time"}
+{"label":"flight_mod","pattern":"latest time possible"}
+{"label":"flight_mod","pattern":"inexpensive"}
+{"label":"arrive_date","pattern":"may"}
+{"label":"arrive_date","pattern":"seventh"}
+{"label":"arrive_date","pattern":"november"}
+{"label":"arrive_date","pattern":"ninth"}
+{"label":"arrive_date","pattern":"thursday"}
+{"label":"arrive_date","pattern":"july"}
+{"label":"arrive_date","pattern":"fourth"}
+{"label":"arrive_date","pattern":"saturday"}
+{"label":"arrive_date","pattern":"twenty two"}
+{"label":"arrive_date","pattern":"march"}
+{"label":"arrive_date","pattern":"second"}
+{"label":"arrive_date","pattern":"wednesday"}
+{"label":"arrive_date","pattern":"tuesday"}
+{"label":"arrive_date","pattern":"june"}
+{"label":"arrive_date","pattern":"fourteenth"}
+{"label":"arrive_date","pattern":"next"}
+{"label":"arrive_date","pattern":"august"}
+{"label":"arrive_date","pattern":"sunday"}
+{"label":"arrive_date","pattern":"eighth"}
+{"label":"arrive_date","pattern":"monday"}
+{"label":"arrive_date","pattern":"twelfth"}
+{"label":"arrive_date","pattern":"thursdays"}
+{"label":"arrive_date","pattern":"first"}
+{"label":"arrive_date","pattern":"fifth"}
+{"label":"arrive_date","pattern":"twenty seventh"}
+{"label":"arrive_date","pattern":"tomorrow"}
+{"label":"arrive_date","pattern":"twenty second"}
+{"label":"arrive_date","pattern":"third"}
+{"label":"arrive_date","pattern":"friday"}
+{"label":"arrive_date","pattern":"tenth"}
+{"label":"arrive_date","pattern":"fifteenth"}
+{"label":"arrive_date","pattern":"february"}
+{"label":"arrive_date","pattern":"twenty eighth"}
+{"label":"meal","pattern":"meal"}
+{"label":"meal","pattern":"meals"}
+{"label":"meal_description","pattern":"snack"}
+{"label":"meal_description","pattern":"dinner"}
+{"label":"meal_description","pattern":"lunch"}
+{"label":"meal_description","pattern":"breakfast"}
+{"label":"meal_description","pattern":"supper"}
+{"label":"meal_description","pattern":"dinner meal"}
+{"label":"return_date","pattern":"may"}
+{"label":"return_date","pattern":"sixth"}
+{"label":"return_date","pattern":"day"}
+{"label":"return_date","pattern":"next"}
+{"label":"return_date","pattern":"february"}
+{"label":"return_date","pattern":"twenty second"}
+{"label":"return_date","pattern":"the following day"}
+{"label":"return_date","pattern":"sunday"}
+{"label":"return_date","pattern":"august"}
+{"label":"return_date","pattern":"twelve"}
+{"label":"airline_code","pattern":"twa"}
+{"label":"airline_code","pattern":"us"}
+{"label":"airline_code","pattern":"dl"}
+{"label":"airline_code","pattern":"as"}
+{"label":"airline_code","pattern":"ua"}
+{"label":"airline_code","pattern":"hp"}
+{"label":"airline_code","pattern":"cp"}
+{"label":"airline_code","pattern":"co"}
+{"label":"airline_code","pattern":"ff"}
+{"label":"airline_code","pattern":"ea"}
+{"label":"airline_code","pattern":"nw"}
+{"label":"airline_code","pattern":"aa"}
+{"label":"airline_code","pattern":"ac"}
+{"label":"flight_stop","pattern":"nonstop"}
+{"label":"flight_stop","pattern":"one stop"}
+{"label":"flight_stop","pattern":"maximum number of stops"}
+{"label":"flight_stop","pattern":"stops"}
+{"label":"flight_stop","pattern":"stop"}
+{"label":"flight_stop","pattern":"stopovers"}
+{"label":"flight_stop","pattern":"nonstops"}
+{"label":"flight_stop","pattern":"directly"}
+{"label":"flight_stop","pattern":"without stopping"}
+{"label":"flight_stop","pattern":"no stops"}
+{"label":"time","pattern":"time"}
+{"label":"time","pattern":"9 am"}
+{"label":"or","pattern":"or"}
+{"label":"economy","pattern":"economy class"}
+{"label":"economy","pattern":"economy"}
+{"label":"flight_number","pattern":"352"}
+{"label":"flight_number","pattern":"852"}
+{"label":"flight_number","pattern":"257"}
+{"label":"flight_number","pattern":"813"}
+{"label":"flight_number","pattern":"746"}
+{"label":"flight_number","pattern":"1765"}
+{"label":"flight_number","pattern":"2153"}
+{"label":"flight_number","pattern":"71"}
+{"label":"flight_number","pattern":"106"}
+{"label":"flight_number","pattern":"838"}
+{"label":"flight_number","pattern":"345"}
+{"label":"flight_number","pattern":"19"}
+{"label":"flight_number","pattern":"82"}
+{"label":"flight_number","pattern":"139"}
+{"label":"flight_number","pattern":"281"}
+{"label":"flight_number","pattern":"825"}
+{"label":"flight_number","pattern":"201"}
+{"label":"flight_number","pattern":"928"}
+{"label":"flight_number","pattern":"315"}
+{"label":"flight_number","pattern":"1291"}
+{"label":"flight_number","pattern":"1039"}
+{"label":"flight_number","pattern":"21"}
+{"label":"flight_number","pattern":"1222"}
+{"label":"flight_number","pattern":"297"}
+{"label":"flight_number","pattern":"3724"}
+{"label":"flight_number","pattern":"343"}
+{"label":"flight_number","pattern":"459"}
+{"label":"flight_number","pattern":"217"}
+{"label":"flight_number","pattern":"296"}
+{"label":"flight_number","pattern":"1059"}
+{"label":"flight_number","pattern":"271"}
+{"label":"flight_number","pattern":"269"}
+{"label":"flight_number","pattern":"1055"}
+{"label":"flight_number","pattern":"405"}
+{"label":"flight_number","pattern":"270"}
+{"label":"flight_number","pattern":"324"}
+{"label":"flight_number","pattern":"311"}
+{"label":"flight_number","pattern":"415"}
+{"label":"flight_number","pattern":"402"}
+{"label":"flight_number","pattern":"98"}
+{"label":"flight_number","pattern":"279"}
+{"label":"flight_number","pattern":"137338"}
+{"label":"flight_number","pattern":"539"}
+{"label":"flight_number","pattern":"3357"}
+{"label":"flight_number","pattern":"323"}
+{"label":"flight_number","pattern":"229"}
+{"label":"flight_number","pattern":"1083"}
+{"label":"flight_number","pattern":"4400"}
+{"label":"flight_number","pattern":"212"}
+{"label":"flight_number","pattern":"771"}
+{"label":"flight_number","pattern":"497766"}
+{"label":"flight_number","pattern":"210"}
+{"label":"flight_number","pattern":"1209"}
+{"label":"flight_number","pattern":"number"}
+{"label":"flight_number","pattern":"505"}
+{"label":"flight_number","pattern":"163"}
+{"label":"flight_number","pattern":"417"}
+{"label":"flight_days","pattern":"daily"}
+{"label":"state_code","pattern":"dc"}
+{"label":"airport_code","pattern":"mco"}
+{"label":"airport_code","pattern":"ord"}
+{"label":"airport_code","pattern":"bna"}
+{"label":"airport_code","pattern":"bur"}
+{"label":"airport_code","pattern":"ewr"}
+{"label":"airport_code","pattern":"hou"}
+{"label":"airport_code","pattern":"atl"}
+{"label":"airport_code","pattern":"mia"}
+{"label":"airport_code","pattern":"dfw"}
+{"label":"airport_code","pattern":"lax"}
+{"label":"airport_code","pattern":"bwi"}
+{"label":"airport_code","pattern":"yyz"}
+{"label":"airport_code","pattern":"iah"}
+{"label":"aircraft_code","pattern":"737"}
+{"label":"aircraft_code","pattern":"f28"}
+{"label":"aircraft_code","pattern":"100"}
+{"label":"aircraft_code","pattern":"d9s"}
+{"label":"aircraft_code","pattern":"m80"}
+{"label":"aircraft_code","pattern":"72s"}
+{"label":"aircraft_code","pattern":"747"}
+{"label":"aircraft_code","pattern":"dc10"}
+{"label":"aircraft_code","pattern":"727"}
+{"label":"aircraft_code","pattern":"73s"}
+{"label":"aircraft_code","pattern":"767"}
+{"label":"aircraft_code","pattern":"757"}
+{"label":"aircraft_code","pattern":"733"}
+{"label":"aircraft_code","pattern":"j31"}
+{"label":"aircraft_code","pattern":"d10"}
+{"label":"aircraft_code","pattern":"734"}
+{"label":"connect","pattern":"connecting"}
+{"label":"connect","pattern":"direct"}
+{"label":"connect","pattern":"connect"}
+{"label":"connect","pattern":"connections"}
+{"label":"connect","pattern":"connects"}
+{"label":"restriction_code","pattern":"ap 57"}
+{"label":"restriction_code","pattern":"ap 80"}
+{"label":"restriction_code","pattern":"ap57"}
+{"label":"restriction_code","pattern":"ap"}
+{"label":"restriction_code","pattern":"ap 55"}
+{"label":"restriction_code","pattern":"ap80"}
+{"label":"restriction_code","pattern":"ap68"}
+{"label":"airport_name","pattern":"st. petersburg airport"}
+{"label":"airport_name","pattern":"phoenix airport"}
+{"label":"airport_name","pattern":"milwaukee airport"}
+{"label":"airport_name","pattern":"san francisco airport"}
+{"label":"airport_name","pattern":"denver airport"}
+{"label":"airport_name","pattern":"general mitchell airport"}
+{"label":"airport_name","pattern":"baltimore airport"}
+{"label":"airport_name","pattern":"boston airport"}
+{"label":"airport_name","pattern":"general mitchell international"}
+{"label":"airport_name","pattern":"dallas airport"}
+{"label":"airport_name","pattern":"philadelphia international airport"}
+{"label":"airport_name","pattern":"pittsburgh airport"}
+{"label":"airport_name","pattern":"salt lake city airport"}
+{"label":"airport_name","pattern":"houston intercontinental"}
+{"label":"airport_name","pattern":"love field"}
+{"label":"airport_name","pattern":"lester pearson airport"}
+{"label":"airport_name","pattern":"philadelphia airport"}
+{"label":"airport_name","pattern":"logan airport"}
+{"label":"airport_name","pattern":"atlanta airport"}
+{"label":"days_code","pattern":"sa"}
+{"label":"day_name","pattern":"monday"}
+{"label":"day_name","pattern":"thursday"}
+{"label":"day_name","pattern":"wednesday"}
+{"label":"day_name","pattern":"tuesday"}
+{"label":"period_of_day","pattern":"morning"}
+{"label":"period_of_day","pattern":"evening"}
+{"label":"today_relative","pattern":"tomorrow"}
+{"label":"today_relative","pattern":"the day after tomorrow"}
+{"label":"meal_code","pattern":"d s"}
+{"label":"meal_code","pattern":"ls"}
+{"label":"meal_code","pattern":"s"}
+{"label":"meal_code","pattern":"meal code s"}
+{"label":"meal_code","pattern":"sd d"}
+{"label":"state_name","pattern":"colorado"}
+{"label":"state_name","pattern":"texas"}
+{"label":"time_relative","pattern":"around"}
+{"label":"return_time","pattern":"evening"}
+{"label":"return_time","pattern":"late"}
+{"label":"month_name","pattern":"july"}
+{"label":"day_number","pattern":"sixth"}
+{"label":"day_number","pattern":"seventh"}
