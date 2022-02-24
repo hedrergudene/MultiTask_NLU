@@ -83,6 +83,8 @@ class MT_IC_HNER_Model(torch.nn.Module):
                  num_labels:Dict,
                  proj_dim:int=128,
                  num_heads:int=4,
+                 hidden_dropout_prob:float=.1,
+                 layer_norm_eps:float=1e-7,
                  ):
         super(MT_IC_HNER_Model, self).__init__()
         # Parameters
@@ -95,8 +97,8 @@ class MT_IC_HNER_Model(torch.nn.Module):
         config.update(
             {
                 "output_hidden_states": True,
-                "hidden_dropout_prob": 0.1,
-                "layer_norm_eps": 1e-7,
+                "hidden_dropout_prob": hidden_dropout_prob,
+                "layer_norm_eps": layer_norm_eps,
                 "add_pooling_layer": False,
             }
         )
