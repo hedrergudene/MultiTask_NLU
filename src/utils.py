@@ -99,15 +99,6 @@ def startOfChunk(prevTag, tag, prevTagType, tagType, chunkStart=False):
     if prevTag == 'O' and tag == 'I':
       chunkStart = True
 
-    if prevTag == 'E' and tag == 'E':
-      chunkStart = True
-    if prevTag == 'E' and tag == 'I':
-      chunkStart = True
-    if prevTag == 'O' and tag == 'E':
-      chunkStart = True
-    if prevTag == 'O' and tag == 'I':
-      chunkStart = True
-
     if tag != 'O' and tag != '.' and prevTagType != tagType:
       chunkStart = True
     return chunkStart
@@ -119,15 +110,6 @@ def endOfChunk(prevTag, tag, prevTagType, tagType, chunkEnd=False):
     if prevTag == 'B' and tag == 'O':
       chunkEnd = True
     if prevTag == 'I' and tag == 'B':
-      chunkEnd = True
-    if prevTag == 'I' and tag == 'O':
-      chunkEnd = True
-
-    if prevTag == 'E' and tag == 'E':
-      chunkEnd = True
-    if prevTag == 'E' and tag == 'I':
-      chunkEnd = True
-    if prevTag == 'E' and tag == 'O':
       chunkEnd = True
     if prevTag == 'I' and tag == 'O':
       chunkEnd = True
