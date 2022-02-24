@@ -8,8 +8,8 @@ import torchmetrics
 def Metrics_IC(model_output, ground_truth, ic_metrics_kwargs):
     acc_ml = torchmetrics.Accuracy(**ic_metrics_kwargs)
     f1_ml = torchmetrics.F1Score(**ic_metrics_kwargs)
-    return {'acc_IC': acc_ml(model_output['IC'], ground_truth['IC']),
-            'f1_IC': f1_ml(model_output['IC'], ground_truth['IC']),
+    return {'acc_IC': acc_ml(model_output['IC'], ground_truth['IC']).cpu().numpy()[0],
+            'f1_IC': f1_ml(model_output['IC'], ground_truth['IC']).cpu().numpy()[0],
             }
 
 # H_NER metrics
