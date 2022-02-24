@@ -1,5 +1,5 @@
 # Requirements
-from src.utils import *
+from utils import *
 import numpy as np
 import torch
 import torchmetrics
