@@ -1,5 +1,8 @@
 numpy
 pandas
+requests
+itertools
+spacy
 torch
 torchmetrics
 transformers

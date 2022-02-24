@@ -1,7 +1,7 @@
 import torch
 from typing import Dict
 from transformers import AutoTokenizer
-from utils import collate_spaCy_HuggingFace
+from src.utils import collate_spaCy_HuggingFace
 
 class MT_IC_HNER_Dataset(torch.utils.data.Dataset):
     def __init__(self,
