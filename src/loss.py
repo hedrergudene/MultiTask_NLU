@@ -30,6 +30,6 @@ class MT_IC_HNER_Loss(torch.nn.Module):
         # H_NER branch
         preds = {column:torch.transpose(torch.nn.functional.log_softmax(logits['H_NER'][column], dim=1),dim0=2,dim1=1) for column in self.tags}
         loss_H_NER = torch.stack([self.loss_fn_ent(preds[column], target['H_NER'][column]) for column in self.tags], dim=0)
-        w = torch.nn.functional.sigmoid(self.weights_ner)/torch.sum(torch.nn.functional.sigmoid(self.weights_ner))
+        w = torch.sigmoid(self.weights_ner)/torch.sum(torch.nn.functional.sigmoid(self.weights_ner))
         loss_H_NER = torch.dot(w, loss_H_NER)
-        return torch.nn.functional.sigmoid(self.weight_ic_ner)*loss_IC + (1-torch.nn.functional.sigmoid(self.weight_ic_ner))*loss_H_NER
+        return torch.sigmoid(self.weight_ic_ner)*loss_IC + (1-torch.nn.functional.sigmoid(self.weight_ic_ner))*loss_H_NER
