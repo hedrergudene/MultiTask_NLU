@@ -112,8 +112,8 @@ class MT_IC_HNER_Model(torch.nn.Module):
         # IC ensemble
         self.ner2ic = NER2IC(self.num_labels, self.proj_dim)
     
-    def forward(self, input):
-        transformer_output = self.transformer(input["tokens"], input["attn_mask"])
+    def forward(self, tokens, attn_mask):
+        transformer_output = self.transformer(tokens, attn_mask)
         sequence_output = transformer_output.last_hidden_state # Shape (batch, max_position_embeddings, hidden_size)
         formatted_dict = self.format_layer(sequence_output)
         ner_output, last_ner = self.ic2ner(formatted_dict)
