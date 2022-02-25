@@ -59,7 +59,7 @@ def setup_data(HuggingFace_model:str='roberta-base',
     # Binarise intent labels
     unique_intents = [elem for elem in list(set(intents)) if "+" not in list(elem)]
     intent2idx = {elem:i for i,elem in zip(range(len(unique_intents)), unique_intents)}
-    multilabel_intents = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents_train], axis = 0)
+    multilabel_intents = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents], axis = 0)
 
     #
     # Part III: Create spaCy entity rule objects
