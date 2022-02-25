@@ -22,23 +22,24 @@ def setup_data(HuggingFace_model:str='roberta-base',
     response = requests.get("https://raw.githubusercontent.com/howl-anderson/ATIS_dataset/master/data/standard_format/rasa/test.json")
     test_data = response.json()['rasa_nlu_data']['common_examples']
     # Fetch entity labels and associated expressions
-    texts_train = []
-    intents_train = []
-    text_test = []
-    intents_test = []
+    texts = []
+    intents = []
     ent_label = []
     ent_pattern = []
 
     for dict_data in train_data:
-        texts_train.append(dict_data["text"])
-        intents_train.append(dict_data["intent"])
+        texts.append(dict_data["text"])
+        intents.append(dict_data["intent"])
         for dict_ents in dict_data["entities"]:
             ent_label.append(dict_ents['entity'])
             ent_pattern.append(dict_ents['value'])
     
     for dict_data in test_data:
-        text_test.append(dict_data["text"])
-        intents_test.append(dict_data["intent"])
+        texts.append(dict_data["text"])
+        intents.append(dict_data["intent"])
+        for dict_ents in dict_data["entities"]:
+            ent_label.append(dict_ents['entity'])
+            ent_pattern.append(dict_ents['value'])
     
     entities = pd.DataFrame({"label":ent_label, "pattern":ent_pattern}).drop_duplicates().reset_index(drop=True)
     entities["label_0"] = entities["label"].apply(lambda x: x.split(".")[0])
@@ -58,8 +59,7 @@ def setup_data(HuggingFace_model:str='roberta-base',
     # Binarise intent labels
     unique_intents = [elem for elem in list(set(intents_train)) if "+" not in list(elem)]
     intent2idx = {elem:i for i,elem in zip(range(len(unique_intents)), unique_intents)}
-    multilabel_intents_train = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents_train], axis = 0)
-    multilabel_intents_test = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents_test], axis = 0)
+    multilabel_intents = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents_train], axis = 0)
 
     #
     # Part III: Create spaCy entity rule objects
@@ -120,4 +120,4 @@ def setup_data(HuggingFace_model:str='roberta-base',
                   'H_NER':{column:len(tag2idxs[column])-1 for column in tags},
                   }
     # Exit
-    return {'train':texts_train,'test':texts_test}, {'train':multilabel_intents_train,'test':multilabel_intents_test}, tags, tag2nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
+    return texts, multilabel_intents, tags, tag2nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
