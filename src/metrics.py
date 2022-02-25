@@ -8,9 +8,9 @@ import torchmetrics
 def Metrics_IC(model_output, ground_truth, ic_metrics_kwargs):
     acc_ml = torchmetrics.Accuracy(**ic_metrics_kwargs)
     f1_ml = torchmetrics.F1Score(**ic_metrics_kwargs)
-    return {'acc_IC': acc_ml(model_output['IC'].detach(), ground_truth['IC'].detach()).item(),
-            'f1_IC': f1_ml(model_output['IC'].detach(), ground_truth['IC'].detach()).item(),
-            }
+    return [(acc_ml(model_output['IC'].detach().cpu(), ground_truth['IC'].detach().cpu()).item(), 'acc_IC'),
+            (f1_ml(model_output['IC'].detach().cpu(), ground_truth['IC'].detach().cpu()).item(), 'f1_IC'),
+           ]
 
 # H_NER metrics
 def Metrics_NER(model_output, ground_truth, idxs2tag, original_idxs2tag):
@@ -24,10 +24,8 @@ def Metrics_NER(model_output, ground_truth, idxs2tag, original_idxs2tag):
     target = np.vectorize(convert_tags)(target, original_idxs2tag)
     # Metrics
     f1, precision, recall = computeF1Score(input, target)
-    return {'f1_NER':f1, 'precision_NER':precision, 'recall_NER':recall}
+    return [(f1,'f1_NER'), (precision,'precision_NER'), (recall,'recall_NER')]
 
 # Combine methods
 def metrics(input, target, ic_metrics_kwargs, idxs2tag, original_idxs2tag):
-    return {'IC':Metrics_IC(input, target, ic_metrics_kwargs),
-            'H_NER':Metrics_NER(input, target, idxs2tag, original_idxs2tag),
-            }
+    return Metrics_IC(input, target, ic_metrics_kwargs) + Metrics_NER(input, target, idxs2tag, original_idxs2tag)
