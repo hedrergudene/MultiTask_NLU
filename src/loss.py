@@ -32,4 +32,4 @@ class MT_IC_HNER_Loss(torch.nn.Module):
         loss_H_NER = torch.stack([self.loss_fn_ent(preds[column], target['H_NER'][column]) for column in self.tags], dim=0)
         w = torch.sigmoid(self.weights_ner)/torch.sum(torch.nn.functional.sigmoid(self.weights_ner))
         loss_H_NER = torch.dot(w, loss_H_NER)
-        return torch.sigmoid(self.weight_ic_ner)*loss_IC + (1-torch.nn.functional.sigmoid(self.weight_ic_ner))*loss_H_NER
+        return torch.sigmoid(self.weight_ic_ner)*loss_IC + (1-torch.sigmoid(self.weight_ic_ner))*loss_H_NER
