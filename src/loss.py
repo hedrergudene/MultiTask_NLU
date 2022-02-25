@@ -7,6 +7,7 @@ class MT_IC_HNER_Loss(torch.nn.Module):
                  entity_tags:List[str],
                  reduction:str='sum',
                  label_smoothing:float=.1,
+                 device:str='cuda:0',
                  ):
         super(MT_IC_HNER_Loss, self).__init__()
         # Checks
@@ -16,8 +17,8 @@ class MT_IC_HNER_Loss(torch.nn.Module):
         self.loss_fn_ent = torch.nn.CrossEntropyLoss(reduction=reduction, label_smoothing = label_smoothing)
         self.reduction = reduction
         # Parameters for loss weights
-        self.weight_ic_ner = torch.nn.Parameter(torch.zeros((1)))
-        self.weights_ner = torch.nn.Parameter(torch.zeros((len(self.tags))))
+        self.weight_ic_ner = torch.nn.Parameter(torch.zeros((1))).to(device)
+        self.weights_ner = torch.nn.Parameter(torch.zeros((len(self.tags)))).to(device)
     
     def forward(self, logits, target):
         # IC multilabel branch
