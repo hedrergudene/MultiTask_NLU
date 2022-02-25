@@ -26,10 +26,12 @@ def setup_data(HuggingFace_model:str='roberta-base',
     intents = []
     ent_label = []
     ent_pattern = []
+    i = 0
 
     for dict_data in train_data:
         texts.append(dict_data["text"])
         intents.append(dict_data["intent"])
+        i += 1
         for dict_ents in dict_data["entities"]:
             ent_label.append(dict_ents['entity'])
             ent_pattern.append(dict_ents['value'])
@@ -120,4 +122,4 @@ def setup_data(HuggingFace_model:str='roberta-base',
                   'H_NER':{column:len(tag2idxs[column])-1 for column in tags},
                   }
     # Exit
-    return texts, multilabel_intents, tags, tag2nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
+    return {'train':texts[:i], 'test':texts[i:]}, {'train':multilabel_intents[:i], 'test':multilabel_intents[i:]}, tags, tag2nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
