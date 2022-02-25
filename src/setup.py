@@ -57,7 +57,7 @@ def setup_data(HuggingFace_model:str='roberta-base',
             target[0,intent2idx[label]] = 1
         return target
     # Binarise intent labels
-    unique_intents = [elem for elem in list(set(intents_train)) if "+" not in list(elem)]
+    unique_intents = [elem for elem in list(set(intents)) if "+" not in list(elem)]
     intent2idx = {elem:i for i,elem in zip(range(len(unique_intents)), unique_intents)}
     multilabel_intents = np.concatenate([multilabel_intent(intent2idx,elem.split("+")) for elem in intents_train], axis = 0)
 
