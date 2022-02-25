@@ -11,11 +11,12 @@ class LinearProjFormat(torch.nn.Module):
                  tags:List,
                  hidden_size:int,
                  proj_dim:int=128,
+                 device:str='cuda:0',
                  ):
         super(LinearProjFormat, self).__init__()
         # Parameters
-        self.linear = {'IC':torch.nn.Linear(hidden_size, proj_dim),
-                        'H_NER':{column:torch.nn.Linear(hidden_size, proj_dim) for column in tags},
+        self.linear = {'IC':torch.nn.Linear(hidden_size, proj_dim, device=device),
+                        'H_NER':{column:torch.nn.Linear(hidden_size, proj_dim, device=device) for column in tags},
                         }
         self.tags = tags
     
@@ -34,14 +35,15 @@ class IC2NER(torch.nn.Module):
                  pos_embeddings:int,
                  proj_dim:int=128,
                  num_heads:int=4,
+                 device='cuda:0',
                  ):
         super(IC2NER, self).__init__()
         # Parameters
         self.tags = tags
         # IC reshape
-        self.linear = {column: torch.nn.Linear(pos_embeddings,num_labels['H_NER'][column]) for column in self.tags}
+        self.linear = {column: torch.nn.Linear(pos_embeddings,num_labels['H_NER'][column], device=device) for column in self.tags}
         # H_NER multi-head attn products
-        self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True) for column in self.tags[:-1]}
+        self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True, device=device) for column in self.tags[:-1]}
     
     def forward(self, formatted_tensor):
         # IC branch setup
@@ -63,10 +65,11 @@ class NER2IC(torch.nn.Module):
     def __init__(self,
                  num_labels:Dict,
                  proj_dim:int=128,
+                 device:str='cuda',
                  ):
         super(NER2IC, self).__init__()
         # Parameters
-        self.linear = torch.nn.Linear(proj_dim, num_labels['IC'])
+        self.linear = torch.nn.Linear(proj_dim, num_labels['IC'], device=device)
     
     def forward(self, ic_tensor, last_ner_tensor):
         ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, pos_embeddings, 1)
@@ -85,6 +88,7 @@ class MT_IC_HNER_Model(torch.nn.Module):
                  num_heads:int=4,
                  hidden_dropout_prob:float=.1,
                  layer_norm_eps:float=1e-7,
+                 device:str='cuda:0',
                  ):
         super(MT_IC_HNER_Model, self).__init__()
         # Parameters
@@ -93,7 +97,7 @@ class MT_IC_HNER_Model(torch.nn.Module):
         self.proj_dim = proj_dim
         self.tags = list(self.num_labels["H_NER"].keys())
         # Take pretrained model from custom configuration
-        config = AutoConfig.from_pretrained(model_name)
+        config = AutoConfig.from_pretrained(model_name).to(device)
         config.update(
             {
                 "output_hidden_states": True,
@@ -106,11 +110,11 @@ class MT_IC_HNER_Model(torch.nn.Module):
         self.hidden_size = config.hidden_size
         self.transformer = AutoModel.from_config(config)
         # Format
-        self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim)
+        self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim, device=device)
         # NER manipulation
-        self.ic2ner = IC2NER(self.tags, self.num_labels, self.pos_embeddings, self.proj_dim, self.num_heads)
+        self.ic2ner = IC2NER(self.tags, self.num_labels, self.pos_embeddings, self.proj_dim, self.num_heads, device=device)
         # IC ensemble
-        self.ner2ic = NER2IC(self.num_labels, self.proj_dim)
+        self.ner2ic = NER2IC(self.num_labels, self.proj_dim, device=device)
     
     def forward(self, tokens, attn_mask):
         transformer_output = self.transformer(tokens, attn_mask)
