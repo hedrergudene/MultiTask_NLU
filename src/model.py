@@ -97,7 +97,7 @@ class MT_IC_HNER_Model(torch.nn.Module):
         self.proj_dim = proj_dim
         self.tags = list(self.num_labels["H_NER"].keys())
         # Take pretrained model from custom configuration
-        config = AutoConfig.from_pretrained(model_name).to(device)
+        config = AutoConfig.from_pretrained(model_name)
         config.update(
             {
                 "output_hidden_states": True,
@@ -108,7 +108,7 @@ class MT_IC_HNER_Model(torch.nn.Module):
         )
         self.pos_embeddings = config.max_position_embeddings
         self.hidden_size = config.hidden_size
-        self.transformer = AutoModel.from_config(config)
+        self.transformer = AutoModel.from_config(config).to(device)
         # Format
         self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim, device=device)
         # NER manipulation
