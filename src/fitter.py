@@ -56,6 +56,7 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
 
         self.ic_metrics_kwargs = ic_metrics_kwargs
         self.idxs2tag = idxs2tag
+        self.tags = list(self.idxs2tag.keys())
         self.original_idxs2tag = original_idxs2tag
         self.model = model
         self.device = device
@@ -77,7 +78,7 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
         x = {k: v.to(self.device) for k, v in data[0].items()}
 
         y = {'IC':data[1]['IC'].to(self.device),
-             'H_NER':{column:data[1]['H_NER'][column].to(self.device) for column in tags},
+             'H_NER':{column:data[1]['H_NER'][column].to(self.device) for column in self.tags},
              }
 
         if 'w' in data:
