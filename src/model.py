@@ -5,18 +5,38 @@ from transformers import AutoConfig, AutoModel
 
 # Utils
 
+## Linear Block
+class LinearBlock(torch.nn.Module):
+    def __init__(self,
+                 input_dim:int,
+                 output_dim:int,
+                 dropout:float=.25,
+                 device:str='cuda:0',
+                 ):
+        super(LinearBlock, self).__init__()
+        # Parameters
+        self.block = torch.nn.Sequential(torch.nn.Linear(input_dim, output_dim, device=device),
+                                          torch.nn.LayerNorm(output_dim, device=device),
+                                          torch.nn.GELU(),
+                                          torch.nn.Dropout(dropout),
+                                        )
+    
+    def forward(self, x):
+        return self.block(x)
+
 ## Data formatting and projection
 class LinearProjFormat(torch.nn.Module):
     def __init__(self,
                  tags:List,
                  hidden_size:int,
                  proj_dim:int=128,
+                 dropout:float=.25,
                  device:str='cuda:0',
                  ):
         super(LinearProjFormat, self).__init__()
         # Parameters
-        self.linear = {'IC':torch.nn.Linear(hidden_size, proj_dim, device=device),
-                        'H_NER':{column:torch.nn.Linear(hidden_size, proj_dim, device=device) for column in tags},
+        self.linear = {'IC':LinearBlock(hidden_size, proj_dim, dropout=dropout, device=device),
+                        'H_NER':{column:LinearBlock(hidden_size, proj_dim, dropout=dropout, device=device) for column in tags},
                         }
         self.tags = tags
     
@@ -35,13 +55,14 @@ class IC2NER(torch.nn.Module):
                  pos_embeddings:int,
                  proj_dim:int=128,
                  num_heads:int=4,
+                 dropout:float=.25,
                  device='cuda:0',
                  ):
         super(IC2NER, self).__init__()
         # Parameters
         self.tags = tags
         # IC reshape
-        self.linear = {column: torch.nn.Linear(pos_embeddings,num_labels['H_NER'][column], device=device) for column in self.tags}
+        self.linear = {column: LinearBlock(pos_embeddings,num_labels['H_NER'][column], dropout=dropout, device=device) for column in self.tags}
         # H_NER multi-head attn products
         self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True, device=device) for column in self.tags[:-1]}
     
@@ -65,11 +86,12 @@ class NER2IC(torch.nn.Module):
     def __init__(self,
                  num_labels:Dict,
                  proj_dim:int=128,
+                 dropout:float=.25,
                  device:str='cuda',
                  ):
         super(NER2IC, self).__init__()
         # Parameters
-        self.linear = torch.nn.Linear(proj_dim, num_labels['IC'], device=device)
+        self.linear = LinearBlock(proj_dim, num_labels['IC'], dropout = dropout, device=device)
     
     def forward(self, ic_tensor, last_ner_tensor):
         ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, pos_embeddings, 1)
@@ -88,6 +110,7 @@ class MT_IC_HNER_Model(torch.nn.Module):
                  num_heads:int=4,
                  hidden_dropout_prob:float=.1,
                  layer_norm_eps:float=1e-7,
+                 dropout:float=.25,
                  device:str='cuda:0',
                  ):
         super(MT_IC_HNER_Model, self).__init__()
@@ -110,11 +133,11 @@ class MT_IC_HNER_Model(torch.nn.Module):
         self.hidden_size = config.hidden_size
         self.transformer = AutoModel.from_config(config).to(device)
         # Format
-        self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim, device=device)
+        self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim, dropout= dropout, device=device)
         # NER manipulation
-        self.ic2ner = IC2NER(self.tags, self.num_labels, self.pos_embeddings, self.proj_dim, self.num_heads, device=device)
+        self.ic2ner = IC2NER(self.tags, self.num_labels, self.pos_embeddings, self.proj_dim, self.num_heads, dropout= dropout, device=device)
         # IC ensemble
-        self.ner2ic = NER2IC(self.num_labels, self.proj_dim, device=device)
+        self.ner2ic = NER2IC(self.num_labels, self.proj_dim, dropout= dropout, device=device)
     
     def forward(self, tokens, attn_mask):
         transformer_output = self.transformer(tokens, attn_mask)
