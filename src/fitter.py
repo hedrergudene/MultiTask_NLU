@@ -1,7 +1,9 @@
 # Requirements
+import pandas as pd
 import numpy as np
 import torch
-from typing import List, Dict, Iterable
+from typing import List, Dict, Iterable, Callable, Tuple
+from datetime import datetime
 import time
 from benatools.torch.fitter import AverageMeter, TorchFitterBase
 
@@ -87,6 +89,141 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
             w = None
 
         return x, y, w
+
+    def fit(self,
+            train_loader: torch.utils.data.DataLoader,
+            val_loader: torch.utils.data.DataLoader = None,
+            n_epochs: int = 1,
+            metrics: Iterable[Tuple[Callable[[Iterable, Iterable], float], dict]] = None,
+            early_stopping: int = 0,
+            early_stopping_mode: str = 'min',
+            early_stopping_alpha: float = 0.0,
+            early_stopping_pct: float = 0.0,
+            save_checkpoint: bool = False,
+            save_best_checkpoint: bool = True,
+            verbose_steps: int = 0,
+            callbacks: Iterable[Callable[[Dict], None]] = None):
+        """
+        Fits a model
+        Args:
+            train_loader (torch.utils.data.DataLoader): Training data
+            val_loader (torch.utils.data.DataLoader, optional): Validation Data. Defaults to None.
+            n_epochs (int, optional): Maximum number of epochs to train. Defaults to 1.
+            metrics ( function with (y_true, y_pred, **metric_kwargs) signature, optional): Metric to evaluate results on. Defaults to None.
+            metric_kwargs (dict, optional): Arguments for the passed metric. Ignored if metric is None. Defaults to {}.
+            early_stopping (int, optional): Early stopping epochs. Defaults to 0.
+            early_stopping_mode (str, optional): Min or max criteria. Defaults to 'min'.
+            early_stopping_alpha (float, optional): Value that indicates how much to improve to consider early stopping. Defaults to 0.0.
+            early_stopping_pct (float, optional): Value between 0 and 1 that indicates how much to improve to consider early stopping. Defaults to 0.0.
+            save_checkpoint (bool, optional): Whether to save the checkpoint when training. Defaults to False.
+            save_best_checkpoint (bool, optional): Whether to save the best checkpoint when training. Defaults to True.
+            verbose_steps (int, optional): Number of step to print every training summary. Defaults to 0.
+            callbacks (list of callable, optional): List of callback functions to be called after an epoch
+        Returns:
+            pd.DataFrame: DataFrame containing training history
+        """
+        if self.model is None or self.loss_function is None or self.optimizer is None:
+            self.log(f"ERROR: Either model, loss function or optimizer is not existing.")
+            raise ValueError(f"ERROR: Either model, loss function or optimizer is not existing.")
+
+        if self.best_metric == 0.0:
+            self.best_metric = np.inf if early_stopping_mode == 'min' else -np.inf
+
+        initial_epochs = self.epoch
+
+        # Use the same train loader for validation. A possible use case is for autoencoders
+        if isinstance(val_loader, str) and val_loader == 'training':
+            val_loader = train_loader
+
+        training_history = []
+        es_epochs = 0
+        for e in range(n_epochs):
+            history = {'epoch': e}  # training history log for this epoch
+
+            # Update log
+            lr = self.optimizer.param_groups[0]['lr']
+            self.log(f'\n{datetime.utcnow().isoformat(" ", timespec="seconds")}\n \
+                        EPOCH {str(self.epoch+1)}/{str(n_epochs+initial_epochs)} - LR: {lr}')
+
+            # Run one training epoch
+            t = time.time()
+            train_summary_loss = self.train_one_epoch(train_loader, verbose_steps=verbose_steps)
+            history['train'] = train_summary_loss.avg  # training loss
+            history['lr'] = self.optimizer.param_groups[0]['lr']
+
+            # Save checkpoint
+            if save_checkpoint:
+                self.save(f'{self.base_dir}/last-checkpoint.bin', False)
+
+            if val_loader is not None:
+                # Run epoch validation
+                val_summary_loss, calculated_metrics = self.validation(val_loader,
+                                                                       metric=metrics,
+                                                                       verbose_steps=verbose_steps)
+                history['val'] = val_summary_loss.avg  # validation loss
+
+                # Write log
+                metric_log = ' - ' + ' - '.join([f'{fname}: {value}' for value, fname in calculated_metrics]) if calculated_metrics else ''
+                self.log(f'\r[RESULT] {(time.time() - t):.2f}s - train loss: {train_summary_loss.avg:.5f} - val loss: {val_summary_loss.avg:.5f}' + metric_log)
+
+                if calculated_metrics:
+                    history.update({fname: value for value, fname in calculated_metrics})
+                    #history['val_metric'] = calculated_metrics
+
+                calculated_metric = calculated_metrics[0][0] if calculated_metrics else val_summary_loss.avg
+            else:
+                # If no validation is provided, training loss is used as metric
+                calculated_metric = train_summary_loss.avg
+
+            es_pct = early_stopping_pct * self.best_metric
+
+            # Check if result is improved, then save model
+            if (
+                ((metrics) and
+                 (
+                  ((early_stopping_mode == 'max') and (calculated_metric - max(early_stopping_alpha, es_pct) > self.best_metric)) or
+                  ((early_stopping_mode == 'min') and (calculated_metric + max(early_stopping_alpha, es_pct) < self.best_metric))
+                 )
+                ) or
+                ((metrics is None) and
+                 (calculated_metric + max(early_stopping_alpha, es_pct) < self.best_metric) # the standard case is to minimize
+                )
+               ):
+                self.log(f'Validation metric improved from {self.best_metric} to {calculated_metric}')
+                self.best_metric = calculated_metric
+                self.model.eval()
+                if save_best_checkpoint:
+                    savepath = f'{self.base_dir}/best-checkpoint.bin'
+                    self.save(savepath)
+                es_epochs = 0  # reset early stopping count
+            else:
+                es_epochs += 1  # increase epoch count with no improvement, for early stopping check
+
+            # Callbacks receive the history dict of this epoch
+            if callbacks is not None:
+                if not isinstance(callbacks, list):
+                    callbacks = [callbacks]
+                for c in callbacks:
+                    c(history)
+
+            # Check if Early Stopping condition is met
+            if (early_stopping > 0) & (es_epochs >= early_stopping):
+                self.log(f'Early Stopping: {early_stopping} epochs with no improvement')
+                training_history.append(history)
+                break
+
+            # Scheduler step after validation
+            if self.validation_scheduler and self.scheduler is not None:
+                try:
+                    self.scheduler.step(metrics=calculated_metric)
+                except:
+                    self.scheduler.step()
+
+            training_history.append(history)
+            self.epoch += 1
+
+        return pd.DataFrame(training_history).set_index('epoch')
+
 
 
     def validation(self, val_loader, metric=None, verbose_steps=0):
