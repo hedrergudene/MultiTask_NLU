@@ -96,7 +96,7 @@ class IC2NER(torch.nn.Module):
         # Parameters
         self.tags = tags
         # IC reshape
-        self.embedding = torch.nn.Embedding(proj_dim, proj_dim)
+        self.embedding = LinearBlock(1, proj_dim, dropout, device)
         # H_NER multi-head attn products
         self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True, device=device) for column in self.tags[:-1]}
         # H_NER reshape
@@ -105,7 +105,7 @@ class IC2NER(torch.nn.Module):
     def forward(self, formatted_tensor):
         # IC branch setup
         input = formatted_tensor.copy()
-        input['IC'] = self.embedding(input['IC']) # Shape (batch_size, proj_dim, proj_dim)
+        input['IC'] = self.embedding(torch.unsqueeze(input['IC'], dim=-1)) # Shape (batch_size, proj_dim, proj_dim)
         # H_NER tensors
         for i in range(len(self.tags)-1):
             input['H_NER'][self.tags[i+1]], _ = self.attn[self.tags[i]](query=input['H_NER'][self.tags[i]],
@@ -113,7 +113,7 @@ class IC2NER(torch.nn.Module):
                                                                         value=input['H_NER'][self.tags[i+1]],
                                                                         )
         # Mix
-        ner_output = {column: self.linear[column](torch.bmm(input['H_NER'][column], input['IC'][column])) for column in self.tags}
+        ner_output = {column: self.linear[column](torch.bmm(input['H_NER'][column], input['IC'])) for column in self.tags}
         return ner_output
 
 
