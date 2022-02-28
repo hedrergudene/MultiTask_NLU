@@ -113,4 +113,4 @@ def setup_data(HuggingFace_model:str='roberta-base',
                   'H_NER':{column:len(tag2idxs[column])-1 for column in tags},
                   }
     # Exit
-    return {'train':texts[:i], 'test':texts[i:]}, {'train':multilabel_intents[:i], 'test':multilabel_intents[i:]}, tags, tag2nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
+    return {'train':texts[:i], 'test':texts[i:]}, {'train':multilabel_intents[:i], 'test':multilabel_intents[i:]}, tags, nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels
