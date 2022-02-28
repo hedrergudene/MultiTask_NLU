@@ -132,7 +132,7 @@ class NER2IC(torch.nn.Module):
     def forward(self, ic_tensor, ner_output):
         ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, proj_dim, 1)
         w = torch.sigmoid(self.weights_ner)/torch.sum(torch.sigmoid(self.weights_ner))
-        ner_tensor = torch.mean(w[0]*ner_output['label_0']+w[1]*ner_output['label_1'], dim=1, keepdim=True) # Shape (batch_size, 1, proj_dim)
+        ner_tensor = torch.squeeze(w[0]*torch.mean(ner_output['label_0'], dim=-1, keepdim=True)+w[1]*torch.mean(ner_output['label_1'], dim=-1, keepdim=True), dim=1) # Shape (batch_size, 1, proj_dim)
         output = torch.matmul(ic_tensor, ner_tensor) # Shape (batch_size, proj_dim, proj_dim)
         output = torch.mean(output, dim=-1, keepdim=False) # Shape (batch_size, proj_dim)
         output = self.linear(output) # Shape (batch_size, num_classes['IC'])
