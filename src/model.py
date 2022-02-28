@@ -100,7 +100,7 @@ class IC2NER(torch.nn.Module):
         # H_NER multi-head attn products
         self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True, device=device) for column in self.tags[:-1]}
         # H_NER reshape
-        self.linear = {column:LinearBlock(proj_dim, num_labels['H_NER'][column], dropout=dropout, device=device) for column in self.tags[:-1]}
+        self.linear = {column:LinearBlock(proj_dim, num_labels['H_NER'][column], dropout=dropout, device=device) for column in self.tags}
     
     def forward(self, formatted_tensor):
         # IC branch setup
