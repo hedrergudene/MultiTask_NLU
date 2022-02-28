@@ -113,7 +113,7 @@ class IC2NER(torch.nn.Module):
                                                                         )
         # Mix
         ner_output = {column: torch.matmul(input['H_NER'][column], input['IC'][column]) for column in self.tags}
-        return ner_output, input['H_NER'][self.tags[-1]]
+        return ner_output
 
 
 ## Information sharing from NER to IC
@@ -127,12 +127,14 @@ class NER2IC(torch.nn.Module):
         super(NER2IC, self).__init__()
         # Parameters
         self.linear = LinearBlock(proj_dim, num_labels['IC'], dropout = dropout, device=device)
+        self.weights_ner = torch.nn.Parameter(torch.zeros((len(num_labels['H_NER'])))).to(device)
     
-    def forward(self, ic_tensor, last_ner_tensor):
-        ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, pos_embeddings, 1)
-        last_ner_tensor = torch.mean(last_ner_tensor, dim=1, keepdim=True) # Shape (batch_size, 1, proj_dim)
-        output = torch.matmul(ic_tensor, last_ner_tensor) # Shape (batch_size, pos_embeddings, proj_dim)
-        output = torch.mean(output, dim=1, keepdim=False) # Shape (batch_size, proj_dim)
+    def forward(self, ic_tensor, ner_output):
+        ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, proj_dim, 1)
+        w = torch.sigmoid(self.weights_ner)/torch.sum(torch.sigmoid(self.weights_ner))
+        ner_tensor = torch.mean(w[0]*ner_output['label_0']+w[1]*ner_output['label_1'], dim=1, keepdim=True) # Shape (batch_size, 1, proj_dim)
+        output = torch.matmul(ic_tensor, ner_tensor) # Shape (batch_size, proj_dim, proj_dim)
+        output = torch.mean(output, dim=-1, keepdim=False) # Shape (batch_size, proj_dim)
         output = self.linear(output) # Shape (batch_size, num_classes['IC'])
         return output
 
@@ -179,8 +181,8 @@ class MT_IC_HNER_Model(torch.nn.Module):
         transformer_output = self.transformer(tokens, attn_mask)
         sequence_output = transformer_output.last_hidden_state # Shape (batch, max_position_embeddings, hidden_size)
         formatted_dict = self.format_layer(sequence_output)
-        ner_output, last_ner = self.ic2ner(formatted_dict)
-        ic_output = self.ner2ic(formatted_dict['IC'], last_ner)
+        ner_output = self.ic2ner(formatted_dict)
+        ic_output = self.ner2ic(formatted_dict['IC'], ner_output)
         return {'IC':ic_output,
                 'H_NER':ner_output,
                 }
