@@ -1,5 +1,6 @@
 # Requirements
 from typing import Dict, List
+import numpy as np
 import torch
 from transformers import AutoConfig, AutoModel
 
@@ -23,6 +24,40 @@ class LinearBlock(torch.nn.Module):
     
     def forward(self, x):
         return self.block(x)
+
+
+## Attn product
+def scaled_dot_product_attention(q, k, v, mask=None):
+    """Calculate the attention weights.
+    q, k, v must have matching leading dimensions.
+    k, v must have matching penultimate dimension, i.e.: seq_len_k = seq_len_v.
+    The mask has different shapes depending on its type(padding or look ahead)
+    but it must be broadcastable for addition.
+    
+    Args:
+    q: query shape == (..., seq_len_q, depth)
+    k: key shape == (..., seq_len_k, depth)
+    v: value shape == (..., seq_len_v, depth_v)
+    mask: Float tensor with shape broadcastable
+            to (..., seq_len_q, seq_len_k). Defaults to None.
+    
+    Returns:
+    output, attention_weights
+    """
+    # Matrix multiplication
+    matmul_qk = torch.matmul(q, k.transpose(1,2))  # (..., seq_len_q, seq_len_k)
+    # scale matmul_qk
+    dk = k.shape[-1]
+    scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+    # add the mask to the scaled tensor
+    if mask is not None:
+        scaled_attention_logits += (mask * -1e9)
+    # softmax is normalized on the last axis (seq_len_k) so that the scores
+    # add up to 1
+    attention_weights = torch.nn.functional.softmax(scaled_attention_logits, axis=-1)  # (..., seq_len_q, seq_len_k)
+    output = torch.matmul(attention_weights, v)  # (..., seq_len_q, depth_v)
+    return output, attention_weights
+
 
 ## Data formatting and projection
 class LinearProjFormat(torch.nn.Module):
@@ -100,6 +135,7 @@ class NER2IC(torch.nn.Module):
         output = torch.mean(output, dim=1, keepdim=False) # Shape (batch_size, proj_dim)
         output = self.linear(output) # Shape (batch_size, num_classes['IC'])
         return output
+
 
 # Model
 class MT_IC_HNER_Model(torch.nn.Module):

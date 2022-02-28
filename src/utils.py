@@ -3,11 +3,11 @@ import numpy as np
 import torch
 
 # Helper method to collate utterances
-def collate_spaCy_HuggingFace(text, tag2nlp, tokenizer, MAX_LEN, tag2idx, tag2label):
+def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
     # Build dictionaries
-    tags = list(tag2label.keys())
-    tag2doc = {column: tag2nlp[column](text) for column in tags}
-    tag2entlist = {column:[(elem.label_, elem.start_char, elem.end_char) for elem in tag2doc[column].ents if elem.label_ in tag2label[column]] for column in tags}
+    tags = ['label_0', 'label_1']
+    doc = nlp(text)
+    entlist = [(elem.label_, elem.start_char, elem.end_char) for elem in doc.ents if elem.label_ in label]
     tag2target = {}
     # Tokenize text
     tokens = tokenizer.encode_plus(text, max_length=MAX_LEN, padding='max_length',
@@ -15,42 +15,49 @@ def collate_spaCy_HuggingFace(text, tag2nlp, tokenizer, MAX_LEN, tag2idx, tag2la
     train_tokens = tokens['input_ids']
     attn_tokens = tokens['attention_mask']
 
-    for column in tags:
-        # Create array to store each class labels
-        ## First axis indicates the label
-        ## Second axis each text
-        ## Third axis the token position
-        targets = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by default
+    # Create array to store each class labels
+    ## First axis indicates the label
+    ## Second axis each text
+    ## Third axis the token position
+    targets_0 = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
+    targets_1 = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
 
-        # FIND TARGETS IN TEXT AND SAVE IN TARGET ARRAYS
-        offsets = tokens['offset_mapping']
-        offset_index = 0
-        for index, (label, start, end) in enumerate(tag2entlist[column]):
-            a = int(start)
-            b = int(end)
-            if offset_index>len(offsets)-1:
+    # FIND TARGETS IN TEXT AND SAVE IN TARGET ARRAYS
+    offsets = tokens['offset_mapping']
+    offset_index = 0
+    for index, (label, start, end) in enumerate(entlist):
+        a = int(start)
+        b = int(end)
+        label_0 = label.split('.')[0]
+        label_1 = label.split('.')[1] if len(label.split('.'))>1 else None
+        if offset_index>len(offsets)-1:
+            break
+        c = offsets[offset_index][0] # Token start
+        d = offsets[offset_index][1] # Token end
+        count_token = 0 # token counter
+        beginning = True
+        while b>c: # While tokens lie in the discourse of a specific entity
+            if (c>=a)&(b>=d): # If token is inside discourse
+                if beginning:
+                    targets_0[offset_index] = tag2idx['label_0']['B-'+label_0]
+                    if label_1 is not None:
+                        targets_1[offset_index] = tag2idx['label_1']['B-'+label_1]
+                    beginning = False
+                else:
+                    targets_0[offset_index] = tag2idx['label_0']['I-'+label_0]
+                    if label_1 is not None:
+                        targets_1[offset_index] = tag2idx['label_1']['I-'+label_1]
+            count_token += 1
+            offset_index += 1 # Move to the next token
+            if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
                 break
-            c = offsets[offset_index][0] # Token start
-            d = offsets[offset_index][1] # Token end
-            count_token = 0 # token counter
-            beginning = True
-            while b>c: # While tokens lie in the discourse of a specific entity
-                if (c>=a)&(b>=d): # If token is inside discourse
-                    if beginning:
-                        targets[offset_index] = tag2idx[column]['B-'+label]
-                        beginning = False
-                    else:
-                        targets[offset_index] = tag2idx[column]['I-'+label]
-                count_token += 1
-                offset_index += 1 # Move to the next token
-                if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
-                    break
-                c = offsets[offset_index][0]
-                d = offsets[offset_index][1]
-        # 'PAD' label to make loss function ignore padding, which is basically where attn_tokens is zero
-        targets[np.where(np.array(attn_tokens)==0)[0]] = tag2idx[column]['PAD']
-        # Save in dictionary
-        tag2target[column] = torch.LongTensor(targets)
+            c = offsets[offset_index][0]
+            d = offsets[offset_index][1]
+    # 'PAD' label to make loss function ignore padding, which is basically where attn_tokens is zero
+    targets_0[np.where(np.array(attn_tokens)==0)[0]] = tag2idx['label_0']['PAD']
+    targets_1[np.where(np.array(attn_tokens)==0)[0]] = tag2idx['label_1']['PAD']
+    # Save in dictionary
+    tag2target = {'label_0': torch.LongTensor(targets_0), 'label_1': torch.LongTensor(targets_1)}
     # End of method
     return {"tokens":torch.LongTensor(train_tokens), "attn_mask":torch.LongTensor(attn_tokens)}, tag2target
 

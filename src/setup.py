@@ -46,8 +46,6 @@ def setup_data(HuggingFace_model:str='roberta-base',
     entities = pd.DataFrame({"label":ent_label, "pattern":ent_pattern}).drop_duplicates().reset_index(drop=True)
     entities["label_0"] = entities["label"].apply(lambda x: x.split(".")[0])
     entities["label_1"] = entities["label"].apply(lambda x: x.split(".")[1] if len(x.split("."))>1 else np.NaN)
-    entities = entities.drop(["label"], axis=1)
-    entities = entities[["label_0", "label_1", "pattern"]]
 
     #
     # PART II: Multilabel IC data
@@ -66,30 +64,22 @@ def setup_data(HuggingFace_model:str='roberta-base',
     #
     # Part III: Create spaCy entity rule objects
     #
-    # Object to store entity rulers
-    tag2nlp={}
-    tags = [col for col in entities.columns if col[:5]=="label"]
-    # Loop
-    for column in tags:
-        # PART I: Create spaCy model and add Entity Ruler
-        patterns = entities[["pattern", column]].dropna().drop_duplicates()
-        patterns.columns = ["pattern", "label"]
-        # PART II: Create spaCy model and add Entity Ruler
-        nlp = spacy.load(spaCy_model, exclude=["ner"])
-        config = {
-           "phrase_matcher_attr": None,
-           "validate": False, #	Whether patterns should be validated (passed to the Matcher and PhraseMatcher)
-           "overwrite_ents": True, # If existing entities are present, e.g. entities added by the model, overwrite them by matches if necessary.
-           "ent_id_sep": "||", # Separator used internally for entity IDs
-        }
-        # ~5 min
-        ruler = nlp.add_pipe("entity_ruler", config=config)
-        assert len(ruler) == 0
-        ruler.add_patterns(list(patterns.T.to_dict().values()))
-        assert len(ruler) == len(patterns)
-        print(f'Number of patterns added in level {column}: {len(ruler)}. Entities associated to those patterns: {entities[column].nunique()}')
-        # PART III: Save results
-        tag2nlp[column]=nlp
+    
+    # PART I: Create spaCy model and add Entity Ruler
+    patterns = entities[["pattern", 'label']].dropna().drop_duplicates()
+    # PART II: Create spaCy model and add Entity Ruler
+    nlp = spacy.load(spaCy_model, exclude=["ner"])
+    config = {
+       "phrase_matcher_attr": None,
+       "validate": False, #	Whether patterns should be validated (passed to the Matcher and PhraseMatcher)
+       "overwrite_ents": True, # If existing entities are present, e.g. entities added by the model, overwrite them by matches if necessary.
+       "ent_id_sep": "||", # Separator used internally for entity IDs
+    }
+    ruler = nlp.add_pipe("entity_ruler", config=config)
+    assert len(ruler) == 0
+    ruler.add_patterns(list(patterns.T.to_dict().values()))
+    assert len(ruler) == len(patterns)
+    print(f'Number of patterns added: {len(ruler)}. Entities associated to those patterns: {entities.nunique()}')
     
     #
     # Part IV: Model settings
@@ -97,6 +87,7 @@ def setup_data(HuggingFace_model:str='roberta-base',
     # Set model parameters
     config = AutoConfig.from_pretrained(HuggingFace_model)
     MAX_LEN = config.max_position_embeddings
+    tags = ['label_0', 'label_1']
     tag2idxs={}
     # Tag systems in NER
     for column in tags:

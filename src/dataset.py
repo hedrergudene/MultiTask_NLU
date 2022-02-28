@@ -9,7 +9,7 @@ class MT_IC_HNER_Dataset(torch.utils.data.Dataset):
                  intents,
                  model_name:str,
                  max_length:int,
-                 tag2nlp:Dict,
+                 nlp,
                  tag2idx:Dict,
                  ):
         # Parameters
@@ -17,11 +17,10 @@ class MT_IC_HNER_Dataset(torch.utils.data.Dataset):
         self.intents = intents
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.max_length = max_length
-        self.tag2nlp = tag2nlp
+        self.nlp = nlp
         self.tag2idx = tag2idx
-        self.tags = list(self.tag2nlp.keys())
         # Extra utilities
-        self.tag2label = {column:list(set([elem[2:] for elem in self.tag2idx[column].keys() if elem[:2] in ['B-','I-']]+["PAD"])) for column in self.tags}
+        self.label = list(nlp.get_pipe('entity_ruler').labels)
 
     def __len__(self):
         return len(self.corpus)
@@ -29,5 +28,5 @@ class MT_IC_HNER_Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         text = self.corpus[idx]
         intent = torch.LongTensor(self.intents[idx,:])
-        input, tag2target = collate_spaCy_HuggingFace(text, self.tag2nlp, self.tokenizer, self.max_length, self.tag2idx, self.tag2label)
+        input, tag2target = collate_spaCy_HuggingFace(text, self.nlp, self.tokenizer, self.max_length, self.tag2idx, self.label)
         return input, {"IC":intent, "H_NER":tag2target}
