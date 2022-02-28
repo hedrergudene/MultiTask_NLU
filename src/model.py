@@ -75,9 +75,9 @@ class LinearProjFormat(torch.nn.Module):
                         }
         self.tags = tags
     
-    def forward(self, backbone_tensor):
-        formatted_output = {"IC":self.linear['IC'](backbone_tensor),
-                            "H_NER":{column:self.linear['H_NER'][column](backbone_tensor) for column in self.tags},
+    def forward(self, pooler_output, sequence_output):
+        formatted_output = {"IC":self.linear['IC'](pooler_output),
+                            "H_NER":{column:self.linear['H_NER'][column](sequence_output) for column in self.tags},
                             }
         return formatted_output
 
@@ -87,7 +87,6 @@ class IC2NER(torch.nn.Module):
     def __init__(self,
                  tags:List,
                  num_labels:Dict,
-                 pos_embeddings:int,
                  proj_dim:int=128,
                  num_heads:int=4,
                  dropout:float=.25,
@@ -97,14 +96,16 @@ class IC2NER(torch.nn.Module):
         # Parameters
         self.tags = tags
         # IC reshape
-        self.linear = {column: LinearBlock(pos_embeddings,num_labels['H_NER'][column], dropout=dropout, device=device) for column in self.tags}
+        self.embedding = torch.nn.Embedding(proj_dim, proj_dim)
         # H_NER multi-head attn products
         self.attn = {column:torch.nn.MultiheadAttention(proj_dim, num_heads, kdim=proj_dim, vdim=proj_dim, batch_first=True, device=device) for column in self.tags[:-1]}
+        # H_NER reshape
+        self.linear = {column:torch.LinearBlock(proj_dim, num_labels['H_NER'][column], dropout=dropout, device=device) for column in self.tags[:-1]}
     
     def forward(self, formatted_tensor):
         # IC branch setup
         input = formatted_tensor.copy()
-        input['IC'] = {column:self.linear[column](torch.transpose(input['IC'], 1,2)) for column in self.tags}
+        input['IC'] = self.embedding(input['IC']) # Shape (batch_size, proj_dim, proj_dim)
         # H_NER tensors
         for i in range(len(self.tags)-1):
             input['H_NER'][self.tags[i+1]], _ = self.attn[self.tags[i]](query=input['H_NER'][self.tags[i]],
@@ -112,7 +113,7 @@ class IC2NER(torch.nn.Module):
                                                                         value=input['H_NER'][self.tags[i+1]],
                                                                         )
         # Mix
-        ner_output = {column: torch.matmul(input['H_NER'][column], input['IC'][column]) for column in self.tags}
+        ner_output = {column: self.linear[column](torch.bmm(input['H_NER'][column], input['IC'][column])) for column in self.tags}
         return ner_output
 
 
@@ -130,9 +131,9 @@ class NER2IC(torch.nn.Module):
         self.weights_ner = torch.nn.Parameter(torch.zeros((len(num_labels['H_NER'])))).to(device)
     
     def forward(self, ic_tensor, ner_output):
-        ic_tensor = torch.mean(ic_tensor, dim=-1, keepdim=True) # Shape (batch_size, proj_dim, 1)
+        ic_tensor = torch.unsqueeze(ic_tensor, dim=-1) # Shape (batch_size, proj_dim, 1)
         w = torch.sigmoid(self.weights_ner)/torch.sum(torch.sigmoid(self.weights_ner))
-        ner_tensor = torch.squeeze(w[0]*torch.mean(ner_output['label_0'], dim=-1, keepdim=True)+w[1]*torch.mean(ner_output['label_1'], dim=-1, keepdim=True), dim=1) # Shape (batch_size, 1, proj_dim)
+        ner_tensor = torch.mean(w[0]*ner_output['label_0']+w[1]*ner_output['label_1'], dim=1, keepdim=True) # Shape (batch_size, 1, proj_dim)
         output = torch.matmul(ic_tensor, ner_tensor) # Shape (batch_size, proj_dim, proj_dim)
         output = torch.mean(output, dim=-1, keepdim=False) # Shape (batch_size, proj_dim)
         output = self.linear(output) # Shape (batch_size, num_classes['IC'])
@@ -173,14 +174,15 @@ class MT_IC_HNER_Model(torch.nn.Module):
         # Format
         self.format_layer = LinearProjFormat(self.tags, self.hidden_size, self.proj_dim, dropout= dropout, device=device)
         # NER manipulation
-        self.ic2ner = IC2NER(self.tags, self.num_labels, self.pos_embeddings, self.proj_dim, self.num_heads, dropout= dropout, device=device)
+        self.ic2ner = IC2NER(self.tags, self.num_labels, self.proj_dim, self.num_heads, dropout= dropout, device=device)
         # IC ensemble
         self.ner2ic = NER2IC(self.num_labels, self.proj_dim, dropout= dropout, device=device)
     
     def forward(self, tokens, attn_mask):
         transformer_output = self.transformer(tokens, attn_mask)
+        pooler_output = transformer_output.pooler_output # Shape (batch, hidden_size)
         sequence_output = transformer_output.last_hidden_state # Shape (batch, max_position_embeddings, hidden_size)
-        formatted_dict = self.format_layer(sequence_output)
+        formatted_dict = self.format_layer(pooler_output, sequence_output)
         ner_output = self.ic2ner(formatted_dict)
         ic_output = self.ner2ic(formatted_dict['IC'], ner_output)
         return {'IC':ic_output,
