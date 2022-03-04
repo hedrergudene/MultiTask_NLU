@@ -1,3 +1,4 @@
+json
 numpy
 pandas
 time
@@ -8,3 +9,4 @@ torch
 torchmetrics
 transformers
 benatools
+fire

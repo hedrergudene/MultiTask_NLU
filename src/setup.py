@@ -1,19 +1,21 @@
 # Requirements
 import requests
 import itertools
+import json
 import numpy as np
 import pandas as pd
 import spacy
 from transformers import AutoConfig
 
 # Method to load data and compute 
-def setup_data(HuggingFace_model:str='roberta-base',
-               spaCy_model:str='en_core_web_sm',
-               scheme:str='IB',
-               ):
+def setup_data(setup_config_path:str='input/setup_config.json'):
     #
     # PART I: Data gathering
     #
+
+    # Load parameters
+    with open(setup_config_path, 'r') as f:
+        setup_config = json.load(f)
 
     # Train data fetch
     response = requests.get("https://raw.githubusercontent.com/howl-anderson/ATIS_dataset/master/data/standard_format/rasa/train.json")
@@ -68,7 +70,7 @@ def setup_data(HuggingFace_model:str='roberta-base',
     # PART I: Create spaCy model and add Entity Ruler
     patterns = entities[["pattern", 'label']].dropna().drop_duplicates()
     # PART II: Create spaCy model and add Entity Ruler
-    nlp = spacy.load(spaCy_model, exclude=["ner"])
+    nlp = spacy.load(setup_config["spaCy_model"], exclude=["ner"])
     config = {
        "phrase_matcher_attr": None,
        "validate": False, #	Whether patterns should be validated (passed to the Matcher and PhraseMatcher)
@@ -85,14 +87,14 @@ def setup_data(HuggingFace_model:str='roberta-base',
     # Part IV: Model settings
     #
     # Set model parameters
-    config = AutoConfig.from_pretrained(HuggingFace_model)
+    config = AutoConfig.from_pretrained(setup_config["HuggingFace_model"])
     MAX_LEN = config.max_position_embeddings
     tags = ['label_0', 'label_1']
     tag2idxs={}
     # Tag systems in NER
     for column in tags:
         labels = entities[column].sort_values().unique()
-        num_tags = len(list(scheme))*len(labels)
+        num_tags = len(list(setup_config["scheme"]))*len(labels)
         # Create dictionary for each tag type
         idx2tag = {i:(str(elem[0])+"-"+str(elem[1])) for i,elem in zip(range(1,num_tags+1), itertools.product(list(scheme),labels))}
         idx2tag[0] = 'O' # Add outside tag

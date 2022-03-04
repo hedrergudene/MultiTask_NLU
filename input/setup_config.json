@@ -1,0 +1,5 @@
+{
+    "HuggingFace_model":"roberta-base",
+    "spaCy_model":"en_core_web_sm",
+    "scheme":"IB"
+}
