@@ -12,7 +12,6 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
                  nlp,
                  intent2idx:Dict,
                  ner2idx:Dict,
-                 device:str='cuda:0',
                  ):
         # Parameters
         self.corpus = corpus
@@ -39,4 +38,4 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
         target = torch.zeros((1,len(self.intent2idx)))
         for label in labels:
             target[0,self.intent2idx[label]] = 1
-        return target.type('torch.LongTensor').to(self.device)
+        return target.type('torch.LongTensor')
