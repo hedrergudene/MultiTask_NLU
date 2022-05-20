@@ -3,12 +3,10 @@ import numpy as np
 import torch
 
 # Helper method to collate utterances
-def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
+def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, ner2idx, label):
     # Build dictionaries
-    tags = ['label_0', 'label_1']
     doc = nlp(text)
     entlist = [(elem.label_, elem.start_char, elem.end_char) for elem in doc.ents if elem.label_ in label]
-    tag2target = {}
     # Tokenize text
     tokens = tokenizer.encode_plus(text, max_length=MAX_LEN, padding='max_length',
                                     truncation=True, return_offsets_mapping=True)
@@ -19,8 +17,7 @@ def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
     ## First axis indicates the label
     ## Second axis each text
     ## Third axis the token position
-    targets_0 = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
-    targets_1 = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
+    targets = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
 
     # FIND TARGETS IN TEXT AND SAVE IN TARGET ARRAYS
     offsets = tokens['offset_mapping']
@@ -28,8 +25,6 @@ def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
     for index, (label, start, end) in enumerate(entlist):
         a = int(start)
         b = int(end)
-        label_0 = label.split('.')[0]
-        label_1 = label.split('.')[1] if len(label.split('.'))>1 else None
         if offset_index>len(offsets)-1:
             break
         c = offsets[offset_index][0] # Token start
@@ -39,14 +34,10 @@ def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
         while b>c: # While tokens lie in the discourse of a specific entity
             if (c>=a)&(b>=d): # If token is inside discourse
                 if beginning:
-                    targets_0[offset_index] = tag2idx['label_0']['B-'+label_0]
-                    if label_1 is not None:
-                        targets_1[offset_index] = tag2idx['label_1']['B-'+label_1]
+                    targets[offset_index] = ner2idx['B-'+label]
                     beginning = False
                 else:
-                    targets_0[offset_index] = tag2idx['label_0']['I-'+label_0]
-                    if label_1 is not None:
-                        targets_1[offset_index] = tag2idx['label_1']['I-'+label_1]
+                    targets[offset_index] = ner2idx['I-'+label]
             count_token += 1
             offset_index += 1 # Move to the next token
             if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
@@ -54,12 +45,11 @@ def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, tag2idx, label):
             c = offsets[offset_index][0]
             d = offsets[offset_index][1]
     # 'PAD' label to make loss function ignore padding, which is basically where attn_tokens is zero
-    targets_0[np.where(np.array(attn_tokens)==0)[0]] = tag2idx['label_0']['PAD']
-    targets_1[np.where(np.array(attn_tokens)==0)[0]] = tag2idx['label_1']['PAD']
+    targets[np.where(np.array(attn_tokens)==0)[0]] = ner2idx['PAD']
     # Save in dictionary
-    tag2target = {'label_0': torch.LongTensor(targets_0), 'label_1': torch.LongTensor(targets_1)}
+    target =  torch.LongTensor(targets)
     # End of method
-    return {"tokens":torch.LongTensor(train_tokens), "attn_mask":torch.LongTensor(attn_tokens)}, tag2target
+    return {"tokens":torch.LongTensor(train_tokens), "attn_mask":torch.LongTensor(attn_tokens)}, target
 
 
 # Method to ensemble NER outputs into one
