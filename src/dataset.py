@@ -21,7 +21,6 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
         self.nlp = nlp
         self.intent2idx = intent2idx
         self.ner2idx = ner2idx
-        self.device = device
         # Extra utilities
         self.label = list(nlp.get_pipe('entity_ruler').labels)
 
