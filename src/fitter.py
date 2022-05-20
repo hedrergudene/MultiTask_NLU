@@ -5,15 +5,62 @@ import torch
 from typing import List, Dict, Iterable, Callable, Tuple
 from datetime import datetime
 import time
-from benatools.torch.fitter import AverageMeter, TorchFitterBase
+import os
 
-# Fitter method
-class MT_IC_HNER_Fitter(TorchFitterBase):
+
+# AverageMeter class (taken from benatools: https://github.com/benayas1/benatools)
+class AverageMeter(object):
+    """
+    Computes and stores the average and current value
+    Attributes
+    ----------
+    val : float
+        Stores the average loss of the last batch
+    avg : float
+        Average loss
+    sum : float
+        Sum of all losses
+    count : int
+        number of elements
+    """
+    def __init__(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        """
+        Updates current internal state
+        Parameters
+        ----------
+        val : float
+            loss on each training step
+        n : int, Optional
+            batch size
+        """
+        if np.isnan(val) or np.isinf(val):
+            return
+
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+# Fitter base class (taken from benatools: https://github.com/benayas1/benatools)
+class TorchFitterBase:
+    """
+    Helper class to implement a training loop in PyTorch
+    """
 
     def __init__(self,
-                 ic_metrics_kwargs,
-                 idxs2tag,
-                 original_idxs2tag,
                  model: torch.nn.Module = None,
                  device: str = 'cpu',
                  loss: torch.nn.Module = None,
@@ -56,10 +103,6 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
         self.log_path = f'{self.base_dir}/log.txt'
         self.best_metric = 0
 
-        self.ic_metrics_kwargs = ic_metrics_kwargs
-        self.idxs2tag = idxs2tag
-        self.tags = list(self.idxs2tag.keys())
-        self.original_idxs2tag = original_idxs2tag
         self.model = model
         self.device = device
         self.use_amp = use_amp
@@ -74,21 +117,19 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
         self.step_scheduler = step_scheduler  # do scheduler.step after optimizer.step
         self.log(f'Fitter prepared. Device is {self.device}')
 
-
-    # Mechanism to unwrap data and place it in the right device
     def unpack(self, data):
-        x = {k: v.to(self.device) for k, v in data[0].items()}
+        raise NotImplementedError('This class is a base class')
 
-        y = {'IC':data[1]['IC'].to(self.device),
-             'H_NER':{column:data[1]['H_NER'][column].to(self.device) for column in self.tags},
-             }
+    def reduce_loss(self, loss, weights):
+        # Apply sample weights if existing
+        if len(loss.shape) > 0:
+            # apply weights
+            if weights is not None:
+                loss = loss * torch.unsqueeze(weights, 1)
 
-        if 'w' in data:
-            w = data['w'].to(self.device).float()
-        else:
-            w = None
-
-        return x, y, w
+            # reduction
+            loss = loss.mean()
+        return loss
 
     def fit(self,
             train_loader: torch.utils.data.DataLoader,
@@ -214,17 +255,97 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
 
             # Scheduler step after validation
             if self.validation_scheduler and self.scheduler is not None:
-                try:
-                    self.scheduler.step(metrics=calculated_metric)
-                except:
-                    self.scheduler.step()
+                self.scheduler.step(metrics=calculated_metric)
 
             training_history.append(history)
             self.epoch += 1
 
         return pd.DataFrame(training_history).set_index('epoch')
 
+    def train_one_epoch(self, train_loader, verbose_steps=0):
+        """
+        Run one epoch on the train dataset
+        Parameters
+        ----------
+        train_loader : torch.data.utils.DataLoader
+            DataLoaders containing the training dataset
+        verbose_steps : int, defaults to 0
+            number of step to print every training summary
+        Returns
+        -------
+        AverageMeter
+            Object with this epochs's average loss
+        """
+        self.model.train()  # set train mode
+        summary_loss = AverageMeter()  # object to track the average loss
+        t = time.time()
+        batch_size = train_loader.batch_size
 
+        # run epoch
+        for step, data in enumerate(train_loader):
+            if self.verbose & (verbose_steps > 0):
+                if step % verbose_steps == 0:
+                    print(
+                        f'\rTrain Step {step}/{len(train_loader)} | ' +
+                        f'summary_loss: {summary_loss.avg:.5f} | ' +
+                        f'time: {(time.time() - t):.2f} secs | ' +
+                        f'ETA: {(len(train_loader)-step)*(time.time() - t)/(step+1):.2f}', end=''
+                    )
+            # Unpack batch of data
+            x, y, w = self.unpack(data)
+
+            # Run one batch
+            loss = self.train_one_batch(x, y, w)
+
+            summary_loss.update(loss.detach().item(), batch_size)
+
+            # update optimizer using mixed precision if requested
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+
+            # LR Scheduler step after epoch
+            if self.step_scheduler and self.scheduler is not None:
+                self.scheduler.step()
+
+        self.log(f'\r[TRAIN] {(time.time() - t):.2f}s - train loss: {summary_loss.avg:.5f}')
+
+        return summary_loss
+
+    def train_one_batch(self, x, y, w=None):
+        """
+        Trains one batch of data.
+        The actions to be done here are:
+        - extract x and y (labels)
+        - calculate output and loss
+        - backpropagate
+        Args:
+            x (List or Tuple or Dict): Data
+            y (torch.Tensor): Labels
+            w (torch.Tensor, optional): Weights. Defaults to None.
+        Returns:
+            torch.Tensor: A tensor with the calculated loss
+        """
+        self.optimizer.zero_grad()
+
+        with torch.cuda.amp.autocast(enabled=self.use_amp):
+            # Output and loss
+            if isinstance(x, tuple) or isinstance(x, list):
+                output = self.model(*x)
+            elif isinstance(x, dict):
+                output = self.model(**x)
+            else:
+                output = self.model(x)
+
+            loss = self.loss_function(output, y)
+
+            # Reduce loss and apply sample weights if existing
+            loss = self.reduce_loss(loss, w)
+        
+        # backpropagation
+        self.scaler.scale(loss).backward()
+
+
+        return loss
 
     def validation(self, val_loader, metric=None, verbose_steps=0):
         """
@@ -269,6 +390,9 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
             with torch.no_grad():  # no gradient update
                 x, y, w = self.unpack(data)
 
+                if metric:
+                    y_true += y.cpu().numpy().tolist()
+
                 # just forward pass
                 if isinstance(x, tuple) or isinstance(x, list):
                     output = self.model(*x)
@@ -283,13 +407,162 @@ class MT_IC_HNER_Fitter(TorchFitterBase):
                 loss = self.reduce_loss(loss, w)
                 summary_loss.update(loss.detach().item(), batch_size)
 
+                if metric:
+                    y_preds += output.cpu().numpy().tolist()
+
         # Callback metrics
         metric_log = ' '*30
         if metric:
-            calculated_metrics = metric(output, y, self.ic_metrics_kwargs, self.idxs2tag, self.original_idxs2tag)
-            metric_log = ' '.join([f'- {name} {value:.5f}' for value, name in calculated_metrics])
+            calculated_metrics = []
+            y_pred = np.argmax(y_preds, axis=1)
+            for f, args in metric:
+                value = f(y_true, y_pred, **args)
+                calculated_metrics.append((value, f.__name__))
+                metric_log = f'- {f.__name__} {value:.5f} '
         else:
             calculated_metrics = None
 
         self.log(f'\r[VALIDATION] {(time.time() - t):.2f}s - val. loss: {summary_loss.avg:.5f} ' + metric_log)
         return summary_loss, calculated_metrics
+
+    def predict(self, test_loader, verbose_steps=0):
+        """
+        Makes predictions using the trained model
+        Parameters
+        ----------
+        test_loader : torch.utils.data.DataLoader
+            Test Data
+        verbose_steps : int, defaults to 0
+            number of step to print every training summary
+        Returns
+        -------
+        np.array
+            Predicted values by the model
+        """
+        if self.model is None:
+            self.log(f"ERROR: Model is not existing.")
+            raise ValueError(f"ERROR: Model is not existing.")
+
+        self.model.eval()
+        y_preds = []
+        t = time.time()
+
+        for step, data in enumerate(test_loader):
+            if self.verbose & (verbose_steps > 0) > 0:
+                if step % verbose_steps == 0:
+                    print(
+                        f'\rPrediction Step {step}/{len(test_loader)} | ' +
+                        f'time: {(time.time() - t):.2f} secs |' +
+                        f'ETA: {(len(test_loader)-step)*(time.time() - t)/(step+1):.2f}', end=''
+                    )
+            with torch.no_grad():  # no gradient update
+                x, _, _ = self.unpack(data)
+
+                # Output
+                if isinstance(x, tuple) or isinstance(x, list):
+                    output = self.model(*x)
+                elif isinstance(x, dict):
+                    output = self.model(**x)
+                else:
+                    output = self.model(x)
+
+                y_preds += output.cpu().numpy().tolist()
+
+        return np.array(y_preds)
+
+    def save(self, path, verbose=True):
+        """
+        Save model and other metadata
+        Args:
+            path (str): Path of the file to be saved
+            verbose (bool, optional): True = print logs, False = silence. Defaults to True.
+        """
+
+        if verbose:
+            self.log(f'Checkpoint is saved to {path}')
+        self.model.eval()
+
+        data = {
+                'model_state_dict': self.model.state_dict(),
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'best_summary_loss': self.best_metric,
+                'epoch': self.epoch,
+                'scaler': self.scaler.state_dict()
+        }
+
+        if self.scheduler is not None:
+            data['scheduler_state_dict'] = self.scheduler.state_dict()
+
+        if not os.path.exists(self.base_dir):
+            os.makedirs(self.base_dir)
+
+        torch.save(data, path)
+
+    def load(self, path, only_model=False):
+        """
+        Load model and other metadata
+        Args:
+            path (str): Path of the file to be loaded
+            only_model (bool, optional): Whether to load just the model weights. Defaults to False.
+        """
+        checkpoint = torch.load(path)
+
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+
+        if only_model:
+            return
+
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.scaler.load_state_dict(checkpoint["scaler"])
+
+        self.best_metric = checkpoint['best_summary_loss']
+        self.epoch = checkpoint['epoch'] + 1
+
+        if 'scheduler_state_dict' in checkpoint and self.scheduler is not None:
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+
+    @staticmethod
+    def load_model_weights(path, model):
+        """
+        Static method that loads weights into a torch module, extracted from a checkpoint
+        Args:
+            path (str): Path containing the weights. Normally a .bin or .tar file
+            model (torch.nn.Module): Module to load the weights on
+        Returns:
+            torch.nn.Module: The input model with loaded weights
+        """
+
+        checkpoint = torch.load(path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        return model
+
+    def log(self, message):
+        """
+        Log training ouput into console and file
+        Args:
+            message (str): Message to be logged
+        """
+        if self.verbose:
+            print(message)
+
+        if self.save_log is True:
+            if not os.path.exists(self.base_dir):
+                os.makedirs(self.base_dir)
+            with open(self.log_path, 'a+') as logger:
+                logger.write(f'{message}\n')
+
+
+# Fitter method
+class IC_NER_Fitter(TorchFitterBase):
+    # Mechanism to unwrap data and place it in the right device
+    def unpack(self, data):
+        x = {k: v.to(self.device) for k, v in data[0].items()}
+        
+        y = {k: v.to(self.device) for k, v in data[1].items()}
+
+        if 'w' in data:
+            w = data['w'].to(self.device).float()
+        else:
+            w = None
+
+        return x, y, w
