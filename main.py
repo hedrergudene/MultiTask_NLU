@@ -13,6 +13,7 @@ from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.loss import IC_NER_Loss
 from src.fitter import IC_NER_Fitter
+from src.callbacks import wandb_checkpoint
 
 # Setup logs
 root = log.getLogger()
@@ -105,7 +106,7 @@ def main(
                    early_stopping = train_dct['early_stopping'],
                    early_stopping_mode = train_dct['scheduler_mode'],
                    verbose_steps = train_dct['verbose_steps'],
-                   callbacks = [],
+                   callbacks = [wandb_checkpoint],
                    )
     # Move best checkpoint to Weights and Biases root directory to be saved
     log.info(f"Move best checkpoint to Weights and Biases root directory to be saved:")
