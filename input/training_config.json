@@ -6,6 +6,7 @@
     "weight_decay":1e-2,
     "label_smoothing":0.1,
     "early_stopping":3,
+    "scheduler_factor":0.75,
     "scheduler_mode":"min",
     "verbose_steps":10,
     "filepath":"output/",
