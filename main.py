@@ -73,7 +73,13 @@ def main(
                                   lr=train_dct['learning_rate'],
                                   weight_decay=train_dct['weight_decay'],
                                   )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=5*1e-6, last_epoch=- 1, verbose=False)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
+                                                           mode=train_dct['scheduler_mode'],
+                                                           factor=train_dct['scheduler_factor'],
+                                                           patience=train_dct['scheduler_patience'],
+                                                           threshold=1e-6,
+                                                          )
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=5*1e-6, last_epoch=- 1, verbose=False)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
     # Fitter
     if not os.path.isdir(os.path.join(os.getcwd(),train_dct['filepath'])): os.makedirs(os.path.join(os.getcwd(),train_dct['filepath']))
