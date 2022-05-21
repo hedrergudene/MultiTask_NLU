@@ -113,7 +113,7 @@ class IC_NER_Loss(torch.nn.Module):
                  gamma:float=1.,
                  temperature:float=1.,
                  from_logits:bool = True,
-                 multilabel:bool=`True,
+                 multilabel:bool= True,
                  reduction:str = 'mean',
                  n_classes:int = None,
                  class_weights:torch.Tensor=None,
