@@ -78,7 +78,7 @@ def main(
     # Fitter
     if not os.path.isdir(os.path.join(os.getcwd(),train_dct['filepath'])): os.makedirs(os.path.join(os.getcwd(),train_dct['filepath']))
     fitter = IC_NER_Fitter(model,
-                           device,
+                           model_dct['device'],
                            criterion,
                            optimizer,
                            scheduler,
