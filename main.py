@@ -67,7 +67,7 @@ def main(
     # Define model
     model = IC_NER_Model(model_dct['model_name'], num_labels, model_dct['dim'], model_dct['dropout'], model_dct['device'])
     # Get loss, optimisers and schedulers
-    criterion = IC_NER_Loss(n_classes=num_labels, device=model_dct['device'])
+    criterion = IC_NER_Loss(label_smoothing=train_dct['label_smoothing'], n_classes=num_labels, device=model_dct['device'])
     optimizer = torch.optim.AdamW([{'params':model.parameters()}, 
                                   {'params':criterion.parameters()}],
                                   lr=train_dct['learning_rate'],
