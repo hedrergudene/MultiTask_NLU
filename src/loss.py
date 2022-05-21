@@ -103,8 +103,7 @@ class FocalLoss(torch.nn.Module):
         focal_loss = torch.bmm(focal_weights, self.class_weights.repeat(input.shape[0],1,1))
         return torch.squeeze(focal_loss)
 
-
-# IC_NER_Loss
+# IC_NER_Loss Loss
 class IC_NER_Loss(torch.nn.Module):
     """
     Implementation of IC_NER_Loss minimisation function with class weighting and
@@ -114,10 +113,11 @@ class IC_NER_Loss(torch.nn.Module):
                  gamma:float=1.,
                  temperature:float=1.,
                  from_logits:bool = True,
-                 multilabel:bool=False,
-                 reduction:str = 'sum',
-                 n_classes:Dict[int] = None,
-                 class_weights:Dict[torch.Tensor]=None,
+                 multilabel:bool=`True,
+                 reduction:str = 'mean',
+                 n_classes:int = None,
+                 class_weights:torch.Tensor=None,
+                 device:str='cuda',
                  )->None:
         """
         Args:
@@ -125,8 +125,11 @@ class IC_NER_Loss(torch.nn.Module):
         super(IC_NER_Loss, self).__init__()
         # Loss config settings
         self.alpha = torch.nn.Parameter(torch.zeros((1))).to(device)
-        self.loss_ic = FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights['IC'])
-        self.loss_ner = FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['NER'], class_weights['NER'])
+        if class_weights==None:
+            class_weights={'IC':None, 'NER':None}
+        self.loss_ic=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights['IC'], device)
+        self.loss_ner=torch.nn.CrossEntropyLoss(ignore_index=- 100, reduction='mean', label_smoothing=0.0) # Working on implementation of 'ignore_index'
+
 
     def forward(self,
                 input:torch.Tensor,
@@ -145,5 +148,7 @@ class IC_NER_Loss(torch.nn.Module):
             torch.Tensor: Loss tensor. If there is any reduction, output is 0-dimensional. If there is no reduction, loss is provided
                           element-wise through the batch.
         """
-        return torch.sigmoid(self.alpha)*self.loss_ic(input['IC'], target['IC']) + \
-              (1-torch.sigmoid(self.alpha))*self.loss_ner(input['NER'], target['NER'])
+        ic_loss = self.loss_ic(input['IC'], target['IC'])
+        ner_loss = self.loss_ner(torch.permute(input['NER'], (0,2,1)), target['NER'])
+        summary_loss = torch.sigmoid(self.alpha)*ic_loss + (1-torch.sigmoid(self.alpha))*ner_loss
+        return {'IC':ic_loss, 'NER':ner_loss, 'summary':summary_loss}
