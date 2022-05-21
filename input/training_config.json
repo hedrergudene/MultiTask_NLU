@@ -7,6 +7,7 @@
     "label_smoothing":0.1,
     "early_stopping":3,
     "scheduler_factor":0.75,
+    "scheduler_patience":2,
     "scheduler_mode":"min",
     "verbose_steps":10,
     "filepath":"output/",
