@@ -30,11 +30,11 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         text = self.corpus[idx]
         intent = self._multilabel_intent(self.intents[idx].split("+"))
-        input, target = collate_spaCy_HuggingFace(text, self.nlp, self.tokenizer, self.max_length, self.tag2idx, self.label)
+        input, target = collate_spaCy_HuggingFace(text, self.nlp, self.tokenizer, self.max_length, self.ner2idx, self.label)
         return input, {"IC":intent, "NER":target}
 
     def _multilabel_intent(self, labels):
         target = torch.zeros((1,len(self.intent2idx)))
         for label in labels:
             target[0,self.intent2idx[label]] = 1
-        return target.type('torch.LongTensor')
+        return torch.squeeze(target).type('torch.FloatTensor')
