@@ -16,6 +16,7 @@ class FocalLoss(torch.nn.Module):
                  reduction:str = 'mean',
                  n_classes:int = None,
                  class_weights:torch.Tensor=None,
+                 device:str='cuda',
                  )->None:
         """
         Args:
@@ -39,7 +40,7 @@ class FocalLoss(torch.nn.Module):
         # Loss parameters
         self.gamma = gamma
         self.temperature = temperature
-        self.class_weights = torch.ones((n_classes)).unsqueeze(dim=-1) if class_weights is None else class_weights.unsqueeze(dim=-1)
+        self.class_weights = torch.ones((n_classes)).unsqueeze(dim=-1).to(device) if class_weights is None else class_weights.unsqueeze(dim=-1).to(device)
         self.n_classes = n_classes
         self.eps = 1e-6
 
@@ -127,7 +128,7 @@ class IC_NER_Loss(torch.nn.Module):
         self.alpha = torch.nn.Parameter(torch.zeros((1))).to(device)
         if class_weights==None:
             class_weights={'IC':None, 'NER':None}
-        self.loss_ic=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights['IC'])
+        self.loss_ic=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights['IC'], device)
         self.loss_ner=torch.nn.CrossEntropyLoss(ignore_index=- 100, reduction='mean', label_smoothing=0.0) # Working on implementation of 'ignore_index'
                     
 
