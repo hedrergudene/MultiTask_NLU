@@ -102,7 +102,7 @@ def main(
     _ = fitter.fit(train_loader = train_dtl,
                    val_loader = val_dtl,
                    n_epochs = train_dct['epochs'],
-                   metrics = [],
+                   metrics = None,
                    early_stopping = train_dct['early_stopping'],
                    early_stopping_mode = train_dct['scheduler_mode'],
                    verbose_steps = train_dct['verbose_steps'],
