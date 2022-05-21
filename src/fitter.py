@@ -640,8 +640,8 @@ class IC_NER_Fitter(TorchFitterBase):
             if val_loader is not None:
                 # Run epoch validation
                 val_loss, calculated_metrics = self.validation(val_loader,
-                                                                       metric=metrics,
-                                                                       verbose_steps=verbose_steps)
+                                                               metric=metrics,
+                                                               verbose_steps=verbose_steps)
                 
                 history['val_ic_loss'] = val_loss['IC'].avg
                 history['val_ner_loss'] = val_loss['NER'].avg
@@ -656,7 +656,7 @@ class IC_NER_Fitter(TorchFitterBase):
                          f"val ic loss: {val_loss['IC'].avg:.5f} - "\
                          f"val ner loss: {val_loss['NER'].avg:.5f} - "\
                          f"val summary loss: {val_loss['summary'].avg:.5f} - "\
-                         metric_log
+                         + metric_log
                          )
 
                 if calculated_metrics:
