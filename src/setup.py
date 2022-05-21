@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import spacy
 from transformers import AutoConfig
+import logging as log
 
 # Method to load data and compute 
 def setup_data(setup_config_path:str='input/setup_config.json'):
