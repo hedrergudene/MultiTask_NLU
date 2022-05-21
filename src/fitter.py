@@ -871,9 +871,6 @@ class IC_NER_Fitter(TorchFitterBase):
 
                 loss = self.loss_function(output, y)
 
-                # Reduce loss and apply sample weights if existing
-                loss = self.reduce_loss(loss, w)
-
                 ic_loss.update(loss['IC'].detach().item(), batch_size)
                 ner_loss.update(loss['NER'].detach().item(), batch_size)
                 summary_loss.update(loss['summary'].detach().item(), batch_size)
