@@ -1,96 +1,112 @@
 # Requierments
-import os
+import logging as log
 import json
-import pandas as pd
-import numpy as np
+import os
+import sys
 import torch
-import argparse
+import wandb
 import fire
-from pathlib import Path
+
 # Dependencies
-from .src.setup import setup_data
-from .src.dataset import MT_IC_HNER_Dataset
-from .src.model import MT_IC_HNER_Model
-from .src.loss import MT_IC_HNER_Loss
-from .src.metrics import metrics
-from .src.fitter import MT_IC_HNER_Fitter
+from src.setup import setup_data
+from src.dataset import IC_NER_Dataset
+from src.model import IC_NER_Model
+from src.loss import IC_NER_Loss
+from src.fitter import IC_NER_Fitter
 
+# Setup logs
+root = log.getLogger()
+root.setLevel(log.DEBUG)
+handler = log.StreamHandler(sys.stdout)
+handler.setLevel(log.DEBUG)
+formatter = log.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
 
-# Method to gather all arguments
-def parse_args():
+# Main method. Fire automatically allign method arguments with parse commands from console
+def main(
+        setup_config:str="input/setup_config.json",
+        model_config:str="input/model_config.json",
+        training_config:str="input/training_config.json",
+        wandb_config:str="input/wandb_config.json",
+        ):
 
-    parser = argparse.ArgumentParser(description='Template')
+    #
+    # Part I: Data Gathering
+    #
 
-    # === PATHS === #
-    parser.add_argument('--setup_config', type=str, default="input/setup_config.json",
-                                            help='Path to configuration file for data extraction and arrangement of both intents and entities.')
-    parser.add_argument('--model_config', type=str, default="input/model_config.json",
-                                            help='Path to configuration file for model hyperparameters.')
-    parser.add_argument('--training_config', type=str, default="input/training_config.json",
-                                            help='Path to configuration file for training hyperparameters.')
-    parser.add_argument('--metrics_config', type=str, default="input/metrics_config.json",
-                                            help='Path to configuration file for intent classifier multilabel metrics hyperparameters.')
+    # Model dict
+    with open(model_config, 'r') as f:
+        model_dct = json.load(f)
+    # Training dict
+    with open(training_config, 'r') as f:
+        train_dct = json.load(f)
+    # Wandb dict
+    with open(wandb_config, 'r') as f:
+        wandb_dct = json.load(f)
+    # Get data
+    log.info(f"Prepare DataLoaders:")
+    texts, intents, nlp, intent2idx, ner2idx, MAX_LEN, num_labels = setup_data(setup_config)
+    train_dts = IC_NER_Dataset(texts['train'], intents['train'], model_dct['model_name'], MAX_LEN, nlp, intent2idx, ner2idx)
+    train_dtl = torch.utils.data.DataLoader(train_dts,
+                                            batch_size=train_dct['batch_size'],
+                                            num_workers=train_dct['num_workers'],
+                                            shuffle=True,
+                                            )
+    val_dts = IC_NER_Dataset(texts['test'], intents['test'], model_dct['model_name'], MAX_LEN, nlp, intent2idx, ner2idx)
+    val_dtl = torch.utils.data.DataLoader(val_dts,
+                                          batch_size=2*train_dct['batch_size'],
+                                          num_workers=train_dct['num_workers'],
+                                          shuffle=False,
+                                          )
 
+    #
+    # Part II: Model Training
+    #
 
-
-def main():
-    # Fetch args
-    args = parse_args()
-    with open(args['--model_config'], 'r') as f:
-        model_config = json.load(f)
-    with open(args['--training_config'], 'r') as f:
-        training_config = json.load(f)
-    with open(args['--metrics_config'], 'r') as f:
-        metrics_config = json.load(f)
-
-    # Run setup
-    texts, multilabel_intents, tags, nlp, tag2idxs, idxs2tag, original_idxs2tag, MAX_LEN, num_labels = setup_data(setup_config_path=args['--setup_config'])
-    # Build torch dataloaders
-    dts_train = MT_IC_HNER_Dataset(texts['train'], multilabel_intents['train'], model_config['model_name'], MAX_LEN, nlp, tag2idxs)
-    dtl_train = torch.utils.data.DataLoader(dts_train, batch_size = training_config['batch_size'], num_workers = 2, shuffle=True)
-    dts_val = MT_IC_HNER_Dataset(texts['test'], multilabel_intents['test'], model_config['model_name'], MAX_LEN, nlp, tag2idxs)
-    dtl_val = torch.utils.data.DataLoader(dts_val, batch_size = 2*training_config['batch_size'], num_workers = 2, shuffle=False)
     # Define model
-    model = MT_IC_HNER_Model(model_name=model_config['model_name'],
-                             num_labels=num_labels,
-                             proj_dim=model_config['proj_dim'],
-                             num_heads=model_config['num_heads'],
-                             hidden_dropout_prob=model_config['hidden_dropout_prob'],
-                             layer_norm_eps=model_config['layer_norm_eps'],
-                             dropout=model_config['dropout'],
-                             device=model_config['device'],
-                             )
+    model = IC_NER_Model(model_dct['model_name'], num_labels, model_dct['dim'], model_dct['dropout'], model_dct['device'])
     # Get loss, optimisers and schedulers
-    criterion = MT_IC_HNER_Loss(tags, reduction='mean', label_smoothing=training_config['label_smoothing'])
+    criterion = IC_NER_Loss(n_classes=num_labels, device=model_dct['device'])
     optimizer = torch.optim.AdamW([{'params':model.parameters()}, 
-                                  {'params':criterion.parameters()}], lr=training_config['learning_rate'], weight_decay = training_config['weight_decay'])
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=training_config['early_stopping']//2)
-    # Get metrics parameters (overwrite IC classes just in case)
-    metrics_config['num_classes'] = num_labels['IC']
-
+                                  {'params':criterion.parameters()}],
+                                  lr=train_dct['learning_rate'],
+                                  weight_decay=train_dct['weight_decay'],
+                                  )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=5*1e-6, last_epoch=- 1, verbose=False)
+    #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
     # Fitter
-    fitter = MT_IC_HNER_Fitter(metrics_config,
-                               idxs2tag,
-                               original_idxs2tag,
-                               model,
-                               model_config['device'],
-                               criterion,
-                               optimizer,
-                               scheduler,
-                               folder=os.path.join(training_config['filepath'], 'models'),
-                               validation_scheduler = True, # Apply LR scheduler every epoch
-                               )
+    if not os.path.isdir(os.path.join(os.getcwd(),train_dct['filepath'])): os.makedirs(os.path.join(os.getcwd(),train_dct['filepath']))
+    fitter = IC_NER_Fitter(model,
+                           device,
+                           criterion,
+                           optimizer,
+                           scheduler,
+                           folder=os.path.join(os.getcwd(),train_dct['filepath']),
+                           validation_scheduler = True, # Apply LR scheduler every epoch
+                           use_amp = bool(train_dct['use_amp']),
+                           )
+    # Weights and Biases login
+    wandb.login(key=wandb_dct['WB_KEY'])
+    wandb.init(project=wandb_dct['WB_PROJECT'], entity=wandb_dct['WB_ENTITY'], config=train_dct)
+    wandb.watch(model)
+    # Fitter
+    log.info(f"Start fitter training:")
+    _ = fitter.fit(train_loader = train_dtl,
+                   val_loader = val_dtl,
+                   n_epochs = train_dct['epochs'],
+                   metrics = [],
+                   early_stopping = train_dct['early_stopping'],
+                   early_stopping_mode = train_dct['scheduler_mode'],
+                   verbose_steps = train_dct['verbose_steps'],
+                   callbacks = [],
+                   )
+    # Move best checkpoint to Weights and Biases root directory to be saved
+    log.info(f"Move best checkpoint to Weights and Biases root directory to be saved:")
+    os.replace(os.path.join(os.getcwd(),train_dct['filepath'],'best-checkpoint.bin'), f"{wandb.run.dir}/best-checkpoint.bin")
+    # Finish W&B session
+    log.info(f"Finish W&B session:")
+    wandb.finish()
 
-    history = fitter.fit(train_loader = dtl_train,
-                     val_loader = dtl_val,
-                     n_epochs = training_config['epochs'],
-                     metrics = None,#metrics,
-                     early_stopping = training_config['early_stopping'],
-                     verbose_steps = training_config['verbose_steps'],
-                     )
-    
-    # Save metrics results
-    history.to_csv(os.path.join(training_config['filepath'], 'training_history.csv'))
-
-if __name__ == "__main__":
+if __name__=="__main__":
     fire.Fire(main)
