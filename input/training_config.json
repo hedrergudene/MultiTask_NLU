@@ -8,5 +8,6 @@
     "early_stopping":3,
     "scheduler_mode":"min",
     "verbose_steps":10,
-    "filepath":"output/"
+    "filepath":"output/",
+    "use_amp":0
 }
