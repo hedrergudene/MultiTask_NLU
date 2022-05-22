@@ -839,8 +839,7 @@ class IC_NER_Fitter(TorchFitterBase):
         ic_loss = AverageMeter()
         ner_loss = AverageMeter()
         summary_loss = AverageMeter()
-        y_preds = []
-        y_true = []
+        if metric: dct_metric = {name:0 for _,name in metric}
         batch_size = val_loader.batch_size
 
         t = time.time()
@@ -858,9 +857,6 @@ class IC_NER_Fitter(TorchFitterBase):
             with torch.no_grad():  # no gradient update
                 x, y, w = self.unpack(data)
 
-                if metric:
-                    y_true.append(y)
-
                 # just forward pass
                 if isinstance(x, tuple) or isinstance(x, list):
                     output = self.model(*x)
@@ -876,27 +872,23 @@ class IC_NER_Fitter(TorchFitterBase):
                 summary_loss.update(loss['summary'].detach().item(), batch_size)
 
                 if metric:
-                    y_preds.append(output)
-
+                    for f,name in metric:
+                        dct_metric[name] = dct_metric[name]+f(output,y)
+        
         # Callback metrics
-        metric_log = ' '*30
         if metric:
-            calculated_metrics = []
-            for f in metric:
-                avg_value=0
-                for input, target in zip(y_true, y_pred):
-                    (value, name) = f(input, target)
-                    avg_value += value
-                avg_value = avg_value/(len(y_true)*1.)
-                calculated_metrics.append((avg_value, name))
-                metric_log = f'- {name} {avg_value:.5f} '
+            for _, name in metric:
+                dct_metric[name] = dct_metric[name]/len(val_loader)*1.
+            calculated_metrics = [(value,name) for name,value in dct_metric.items()]
+            metric_log = ' - '.join([f"{name}:{value:.5f}" for value,name in calculated_metrics])
         else:
             calculated_metrics = None
+            metric_log = ''
 
         self.log(f"\r[VALIDATION] {(time.time() - t):.2f}s - "\
-                 f"val ic loss: {ic_loss.avg:.5f} " + \
-                 f"val ner loss: {ner_loss.avg:.5f} " + \
-                 f"val summary loss: {summary_loss.avg:.5f} " + \
+                 f"val ic loss: {ic_loss.avg:.5f} - " + \
+                 f"val ner loss: {ner_loss.avg:.5f} - " + \
+                 f"val summary loss: {summary_loss.avg:.5f} - " + \
                  metric_log
                  )
         return {'IC':ic_loss, 'NER':ner_loss, 'summary':summary_loss}, calculated_metrics
