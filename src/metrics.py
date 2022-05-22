@@ -52,10 +52,10 @@ class AccNER(torch.nn.Module):
                 ):
         super(AccNER, self).__init__()
         self.acc_ner = torchmetrics.Accuracy(threshold=0.5,
-                                             num_classes=num_classes,
+                                             #num_classes=num_classes,
                                              ignore_index=-100,
                                              multi_class=multi_class, 
-                                             average="macro",
+                                             #average="macro",
                                              mdmc_average="samplewise",
                                              )
     
@@ -73,10 +73,10 @@ class F1NER(torch.nn.Module):
                 ):
         super(F1NER, self).__init__()
         self.f1_ner = torchmetrics.F1Score(threshold=0.5,
-                                           num_classes=num_classes,
+                                           #num_classes=num_classes,
                                            ignore_index=-100,
                                            multi_class=multi_class, 
-                                           average="macro",
+                                           #average="macro",
                                            mdmc_average="samplewise",
                                            )
     
