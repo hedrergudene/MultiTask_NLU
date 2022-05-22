@@ -12,8 +12,8 @@ def Metrics_ComponentWise(input, target):
     f1_ner = torchmetrics.F1Score(threshold=0.5, num_classes=167, multi_class=False, average="macro", mdmc_average="samplewise")
     return [(acc_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'acc_IC'),
             (f1_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'f1_IC'),
-            (acc_ner(torch.argmax(input['NER']), dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'acc_NER'),
-            (f1_ner(torch.argmax(input['NER']), dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'f1_NER'),
+            (acc_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'acc_NER'),
+            (f1_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'f1_NER'),
            ]
 
 # H_NER metrics
