@@ -13,7 +13,7 @@ from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.loss import IC_NER_Loss
 from src.fitter import IC_NER_Fitter
-from src.metrics import Metrics_ComponentWise
+from src.metrics import AccIC, F1IC, AccNER, F1NER
 from src.callbacks import wandb_checkpoint
 
 # Setup logs
@@ -83,6 +83,11 @@ def main(
                                                           )
     #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=5*1e-6, last_epoch=- 1, verbose=False)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
+    # Metrics
+    acc_ic = AccIC()
+    f1_ic = F1IC()
+    acc_ner = AccNER()
+    f1_ner = F1NER()
     # Fitter
     if not os.path.isdir(os.path.join(os.getcwd(),train_dct['filepath'])): os.makedirs(os.path.join(os.getcwd(),train_dct['filepath']))
     fitter = IC_NER_Fitter(model,
@@ -103,7 +108,7 @@ def main(
     _ = fitter.fit(train_loader = train_dtl,
                    val_loader = val_dtl,
                    n_epochs = train_dct['epochs'],
-                   metrics = [Metrics_ComponentWise],
+                   metrics = [(acc_ic, 'acc_ic'), (f1_ic, 'f1_ic'), (acc_ner, 'acc_ner'), (f1_ner, 'f1_ner')],
                    early_stopping = train_dct['early_stopping'],
                    early_stopping_mode = train_dct['scheduler_mode'],
                    verbose_steps = train_dct['verbose_steps'],
