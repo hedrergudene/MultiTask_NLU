@@ -47,7 +47,7 @@ class AccNER(torch.nn.Module):
                 input:torch.Tensor,
                 target:torch.Tensor,
                ):
-        return acc_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
+        return self.acc_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
     
 # F1 score for token classification
 class F1NER(torch.nn.Module):
@@ -62,4 +62,4 @@ class F1NER(torch.nn.Module):
                 input:torch.Tensor,
                 target:torch.Tensor,
                ):
-        return f1_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
+        return self.f1_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
