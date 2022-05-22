@@ -4,32 +4,62 @@ import numpy as np
 import torch
 import torchmetrics
 
-# IC
-def Metrics_ComponentWise(input, target):
-    acc_ic = torchmetrics.Accuracy(threshold=0.5, num_classes=18, multi_class=True, average="macro", mdmc_average="samplewise")
-    f1_ic = torchmetrics.F1Score(threshold=0.5, num_classes=18, multi_class=True, average="macro", mdmc_average="samplewise")
-    acc_ner = torchmetrics.Accuracy(threshold=0.5, num_classes=167, multi_class=False, average="macro", mdmc_average="samplewise")
-    f1_ner = torchmetrics.F1Score(threshold=0.5, num_classes=167, multi_class=False, average="macro", mdmc_average="samplewise")
-    return [(acc_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'acc_IC'),
-            (f1_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'f1_IC'),
-            (acc_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'acc_NER'),
-            (f1_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'f1_NER'),
-           ]
+# Accuracy for text classification
+class AccIC(torch.nn.Module):
+    def __init__(self,
+                 num_classes:int=18,
+                 multi_class:bool=True,
+                ):
+        super(AccIC, self).__init__()
+        self.acc_ic = torchmetrics.Accuracy(threshold=0.5, num_classes=18, multi_class=True, average="macro", mdmc_average="samplewise")
+    
+    def forward(self,
+                input:torch.Tensor,
+                target:torch.Tensor,
+               ):
+        return self.acc_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item()
 
-# H_NER metrics
-def Metrics_NER(model_output, ground_truth, idxs2tag, original_idxs2tag):
-    # Model output conversion
-    output0, output1 = torch.argmax(model_output['H_NER']['label_0'].detach(), dim=-1).cpu().numpy(), torch.argmax(model_output['H_NER']['label_1'].detach(), dim=-1).cpu().numpy()
-    input = np.core.defchararray.add(np.core.defchararray.add(np.vectorize(idxs2tag['label_0'].get)(output0), np.full(output1.shape,'.')),np.vectorize(idxs2tag['label_1'].get)(output1))
-    input = np.vectorize(convert_tags)(input, original_idxs2tag)
-    # Ground truth conversion
-    GT0, GT1 = ground_truth['H_NER']['label_0'].detach().cpu().numpy(), ground_truth['H_NER']['label_1'].detach().cpu().numpy()
-    target = np.core.defchararray.add(np.core.defchararray.add(np.vectorize(idxs2tag['label_0'].get)(GT0), np.full(output1.shape,'.')),np.vectorize(idxs2tag['label_1'].get)(GT1))
-    target = np.vectorize(convert_tags)(target, original_idxs2tag)
-    # Metrics
-    f1, precision, recall = computeF1Score(input, target)
-    return [(f1,'f1_NER'), (precision,'precision_NER'), (recall,'recall_NER')]
+# F1 score for text classification
+class F1IC(torch.nn.Module):
+    def __init__(self,
+                 num_classes:int=18,
+                 multi_class:bool=True,
+                ):
+        super(F1IC, self).__init__()
+        self.f1_ic = torchmetrics.F1Score(threshold=0.5, num_classes=num_classes, multi_class=multi_class, average="macro", mdmc_average="samplewise")
+    
+    def forward(self,
+                input:torch.Tensor,
+                target:torch.Tensor,
+               ):
+        return self.f1_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item()
 
-# Combine methods
-def metrics(input, target, ic_metrics_kwargs, idxs2tag, original_idxs2tag):
-    return Metrics_IC(input, target, ic_metrics_kwargs) + Metrics_NER(input, target, idxs2tag, original_idxs2tag)
+# Accuracy for token classification
+class AccNER(torch.nn.Module):
+    def __init__(self,
+                 num_classes:int=167,
+                 multi_class:bool=False,
+                ):
+        super(AccNER, self).__init__()
+        self.acc_ner = torchmetrics.Accuracy(threshold=0.5, num_classes=num_classes, multi_class=multi_class, average="macro", mdmc_average="samplewise")
+    
+    def forward(self,
+                input:torch.Tensor,
+                target:torch.Tensor,
+               ):
+        return acc_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item()
+    
+# F1 score for token classification
+class F1NER(torch.nn.Module):
+    def __init__(self,
+                 num_classes:int=167,
+                 multi_class:bool=False,
+                ):
+        super(F1NER, self).__init__()
+        self.f1_ner = torchmetrics.F1Score(threshold=0.5, num_classes=num_classes, multi_class=multi_class, average="macro", mdmc_average="samplewise")
+    
+    def forward(self,
+                input:torch.Tensor,
+                target:torch.Tensor,
+               ):
+        return f1_ner(torch.argmax(input['NER'], dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item()
