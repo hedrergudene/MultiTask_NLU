@@ -5,11 +5,15 @@ import torch
 import torchmetrics
 
 # IC
-def Metrics_IC(model_output, ground_truth, ic_metrics_kwargs):
-    acc_ml = torchmetrics.Accuracy(**ic_metrics_kwargs)
-    f1_ml = torchmetrics.F1Score(**ic_metrics_kwargs)
-    return [(acc_ml(model_output['IC'].detach().cpu(), ground_truth['IC'].detach().cpu()).item(), 'acc_IC'),
-            (f1_ml(model_output['IC'].detach().cpu(), ground_truth['IC'].detach().cpu()).item(), 'f1_IC'),
+def Metrics_ComponentWise(input, target):
+    acc_ic = torchmetrics.Accuracy(threshold=0.5, num_classes=18, multi_class=True, average="macro", mdmc_average="samplewise")
+    f1_ic = torchmetrics.F1Score(threshold=0.5, num_classes=18, multi_class=True, average="macro", mdmc_average="samplewise")
+    acc_ner = torchmetrics.Accuracy(threshold=0.5, num_classes=167, multi_class=False, average="macro", mdmc_average="samplewise")
+    f1_ner = torchmetrics.F1Score(threshold=0.5, num_classes=167, multi_class=False, average="macro", mdmc_average="samplewise")
+    return [(acc_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'acc_IC'),
+            (f1_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu()).item(), 'f1_IC'),
+            (acc_ner(torch.argmax(input['NER']), dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'acc_NER'),
+            (f1_ner(torch.argmax(input['NER']), dim=-1, keepdim=True).detach().cpu(), target['NER'].detach().cpu()).item(), 'f1_NER'),
            ]
 
 # H_NER metrics
