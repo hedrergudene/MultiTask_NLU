@@ -13,6 +13,7 @@ from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.loss import IC_NER_Loss
 from src.fitter import IC_NER_Fitter
+from src.metrics import Metrics_ComponentWise
 from src.callbacks import wandb_checkpoint
 
 # Setup logs
