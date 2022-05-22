@@ -86,8 +86,8 @@ def main(
     # Metrics
     acc_ic = AccIC()
     f1_ic = F1IC()
-    acc_ner = AccNER()
-    f1_ner = F1NER()
+    #acc_ner = AccNER()
+    #f1_ner = F1NER()
     # Fitter
     if not os.path.isdir(os.path.join(os.getcwd(),train_dct['filepath'])): os.makedirs(os.path.join(os.getcwd(),train_dct['filepath']))
     fitter = IC_NER_Fitter(model,
@@ -108,7 +108,7 @@ def main(
     _ = fitter.fit(train_loader = train_dtl,
                    val_loader = val_dtl,
                    n_epochs = train_dct['epochs'],
-                   metrics = [(acc_ic, 'acc_ic'), (f1_ic, 'f1_ic'), (acc_ner, 'acc_ner'), (f1_ner, 'f1_ner')],
+                   metrics = [(acc_ic, 'acc_ic'), (f1_ic, 'f1_ic')],
                    early_stopping = train_dct['early_stopping'],
                    early_stopping_mode = train_dct['scheduler_mode'],
                    verbose_steps = train_dct['verbose_steps'],
