@@ -859,7 +859,7 @@ class IC_NER_Fitter(TorchFitterBase):
                 x, y, w = self.unpack(data)
 
                 if metric:
-                    y_true += y.cpu().numpy().tolist()
+                    y_true.append(y)
 
                 # just forward pass
                 if isinstance(x, tuple) or isinstance(x, list):
@@ -876,17 +876,20 @@ class IC_NER_Fitter(TorchFitterBase):
                 summary_loss.update(loss['summary'].detach().item(), batch_size)
 
                 if metric:
-                    y_preds += output.cpu().numpy().tolist()
+                    y_preds.append(output)
 
         # Callback metrics
         metric_log = ' '*30
         if metric:
             calculated_metrics = []
-            y_pred = np.argmax(y_preds, axis=1)
-            for f, args in metric:
-                value = f(y_true, y_pred, **args)
-                calculated_metrics.append((value, f.__name__))
-                metric_log = f'- {f.__name__} {value:.5f} '
+            for f in metric:
+                avg_value=0
+                for input, target in zip(y_true, y_pred):
+                    (value, name) = f(input, target)
+                    avg_value += value
+                avg_value = avg_value/(len(y_true)*1.)
+                calculated_metrics.append((avg_value, name))
+                metric_log = f'- {name} {avg_value:.5f} '
         else:
             calculated_metrics = None
 
