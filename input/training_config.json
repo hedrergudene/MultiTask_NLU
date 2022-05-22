@@ -8,7 +8,7 @@
     "early_stopping":3,
     "scheduler_factor":0.75,
     "scheduler_patience":2,
-    "scheduler_mode":"min",
+    "scheduler_mode":"max",
     "verbose_steps":10,
     "filepath":"output/",
     "use_amp":0
