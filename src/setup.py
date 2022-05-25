@@ -84,7 +84,7 @@ def setup_data(setup_config_path:str='input/setup_config.json'):
     length_list = []
     for elem in tqdm(texts):
         length_list.append(len(tokenizer(elem).input_ids))
-    max_length = np.quantile(length_list, .995)
+    max_length = int(np.quantile(length_list, .995))
     log.info(f"Recommended maximum length: {max_length}")
     # Tag systems in NER
     labels = entities['label'].sort_values().unique()
