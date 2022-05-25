@@ -4,6 +4,7 @@ import itertools
 import json
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 import spacy
 from transformers import AutoConfig, AutoTokenizer
 import logging as log
