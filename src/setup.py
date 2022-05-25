@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 import spacy
-from transformers import AutoConfig
+from transformers import AutoConfig, AutoTokenizer
 import logging as log
 
 # Method to load data and compute 
@@ -78,9 +78,13 @@ def setup_data(setup_config_path:str='input/setup_config.json'):
     #
     # Part IV: Model settings
     #
-    # Set model parameters
-    config = AutoConfig.from_pretrained(setup_config["HuggingFace_model"])
-    MAX_LEN = config.max_position_embeddings
+    # Estimate max length
+    tokenizer = AutoTokenizer.from_pretrained(setup_config["HuggingFace_model"])
+    length_list = []
+    for elem in tqdm(utterances):
+        length_list.append(len(tokenizer(elem).input_ids))
+    max_length = np.quantile(length_list, .995)
+    log.info(f"Recommended maximum length: {max_length}")
     # Tag systems in NER
     labels = entities['label'].sort_values().unique()
     num_tags = len(list(setup_config["scheme"]))*len(labels)
@@ -96,4 +100,4 @@ def setup_data(setup_config_path:str='input/setup_config.json'):
                   'NER':len(ner2idx)-1, # Remove 'PAD' from classification
                   }
     # Exit
-    return {'train':texts[:i], 'test':texts[i:]}, {'train':intents[:i], 'test':intents[i:]}, nlp, intent2idx, ner2idx, MAX_LEN, num_labels
+    return {'train':texts[:i], 'test':texts[i:]}, {'train':intents[:i], 'test':intents[i:]}, nlp, intent2idx, ner2idx, max_length, num_labels
