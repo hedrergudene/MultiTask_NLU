@@ -82,7 +82,7 @@ def setup_data(setup_config_path:str='input/setup_config.json'):
     # Estimate max length
     tokenizer = AutoTokenizer.from_pretrained(setup_config["HuggingFace_model"])
     length_list = []
-    for elem in tqdm(utterances):
+    for elem in tqdm(texts):
         length_list.append(len(tokenizer(elem).input_ids))
     max_length = np.quantile(length_list, .995)
     log.info(f"Recommended maximum length: {max_length}")
