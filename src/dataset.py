@@ -1,8 +1,10 @@
+# Requirements
 import torch
+import spacy
 from typing import Dict
 from transformers import AutoTokenizer
-from .utils import collate_spaCy_HuggingFace
 
+# Dataset
 class IC_NER_Dataset(torch.utils.data.Dataset):
     def __init__(self,
                  corpus,
@@ -28,13 +30,66 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
         return len(self.corpus)
 
     def __getitem__(self, idx):
+        # Fetch text
         text = self.corpus[idx]
-        intent = self._multilabel_intent(self.intents[idx].split("+"))
-        input, target = collate_spaCy_HuggingFace(text, self.nlp, self.tokenizer, self.max_length, self.ner2idx, self.label)
-        return input, {"IC":intent, "NER":target}
+        # Get tokens, attention mask and NER labels
+        items, ner_labels = self._collate_spaCy_HuggingFace(text)
+        # Get IC labels
+        ic_labels = torch.from_numpy(np.array(self.intent2idx[self.intents[idx]]))
+        # Concatenate IC and NER labels to be processed in HuggingFace trainer
+        # To that end, we need to reshape NER labels from (bs, max_length, labels['NER'])
+        # to (bs, max_length*labels['NER'])
+        items['labels'] = torch.cat([torch.unsqueeze(ic_labels, dim=-1), ner_labels], dim=-1)
+        return items
 
-    def _multilabel_intent(self, labels):
-        target = torch.zeros((1,len(self.intent2idx)))
-        for label in labels:
-            target[0,self.intent2idx[label]] = 1
-        return torch.squeeze(target).type('torch.FloatTensor')
+    def _collate_spaCy_HuggingFace(self, text):
+        # Build dictionaries
+        doc = self.nlp(text)
+        entlist = [(elem.label_, elem.start_char, elem.end_char) for elem in doc.ents if elem.label_ in self.label]
+        # Tokenize text
+        tokens = self.tokenizer.encode_plus(text,
+                                            max_length=self.max_length,
+                                            padding='max_length',
+                                            truncation=True,
+                                            return_offsets_mapping=True,
+                                            return_tensors='pt',
+                                            )
+    
+        # Create array to store each class labels
+        ## First axis indicates the label
+        ## Second axis each text
+        ## Third axis the token position
+        targets = np.zeros((self.max_length), dtype='int32') #Everything is unlabelled by Default
+    
+        # FIND TARGETS IN TEXT AND SAVE IN TARGET ARRAYS
+        offsets = np.squeeze(tokens['offset_mapping'].numpy())
+        offset_index = 0
+        for index, (label, start, end) in enumerate(entlist):
+            a = int(start)
+            b = int(end)
+            if offset_index>len(offsets)-1:
+                break
+            c = offsets[offset_index][0] # Token start
+            d = offsets[offset_index][1] # Token end
+            count_token = 0 # token counter
+            beginning = True
+            while b>c: # While tokens lie in the discourse of a specific entity
+                if (c>=a)&(b>=d): # If token is inside discourse
+                    if beginning:
+                        targets[offset_index] = ner2idx['B-'+label]
+                        beginning = False
+                    else:
+                        targets[offset_index] = ner2idx['I-'+label]
+                count_token += 1
+                offset_index += 1 # Move to the next token
+                if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
+                    break
+                c = offsets[offset_index][0]
+                d = offsets[offset_index][1]
+        # UPDATE: REMOVE -100 TOKEN
+        ## 'PAD' label to make loss function ignore padding, which is basically where attn_tokens is zero
+        #targets[np.where(np.array(np.squeeze(tokens['attention_mask'].numpy()))==0)[0]] = ner2idx['PAD']
+        # Save in dictionary
+        ner_target =  torch.LongTensor(targets)
+        # End of method
+        return {'input_ids': torch.squeeze(tokens['input_ids']), 'attention_mask':torch.squeeze(tokens['attention_mask'])}, ner_target
