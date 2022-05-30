@@ -2,56 +2,6 @@
 import numpy as np
 import torch
 
-# Helper method to collate utterances
-def collate_spaCy_HuggingFace(text, nlp, tokenizer, MAX_LEN, ner2idx, label):
-    # Build dictionaries
-    doc = nlp(text)
-    entlist = [(elem.label_, elem.start_char, elem.end_char) for elem in doc.ents if elem.label_ in label]
-    # Tokenize text
-    tokens = tokenizer.encode_plus(text, max_length=MAX_LEN, padding='max_length',
-                                    truncation=True, return_offsets_mapping=True)
-    train_tokens = tokens['input_ids']
-    attn_tokens = tokens['attention_mask']
-
-    # Create array to store each class labels
-    ## First axis indicates the label
-    ## Second axis each text
-    ## Third axis the token position
-    targets = np.zeros((MAX_LEN), dtype='int32') #Everything is unlabelled by Default
-
-    # FIND TARGETS IN TEXT AND SAVE IN TARGET ARRAYS
-    offsets = tokens['offset_mapping']
-    offset_index = 0
-    for index, (label, start, end) in enumerate(entlist):
-        a = int(start)
-        b = int(end)
-        if offset_index>len(offsets)-1:
-            break
-        c = offsets[offset_index][0] # Token start
-        d = offsets[offset_index][1] # Token end
-        count_token = 0 # token counter
-        beginning = True
-        while b>c: # While tokens lie in the discourse of a specific entity
-            if (c>=a)&(b>=d): # If token is inside discourse
-                if beginning:
-                    targets[offset_index] = ner2idx['B-'+label]
-                    beginning = False
-                else:
-                    targets[offset_index] = ner2idx['I-'+label]
-            count_token += 1
-            offset_index += 1 # Move to the next token
-            if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
-                break
-            c = offsets[offset_index][0]
-            d = offsets[offset_index][1]
-    # 'PAD' label to make loss function ignore padding, which is basically where attn_tokens is zero
-    targets[np.where(np.array(attn_tokens)==0)[0]] = ner2idx['PAD']
-    # Save in dictionary
-    target =  torch.LongTensor(targets)
-    # End of method
-    return {"tokens":torch.LongTensor(train_tokens), "attn_mask":torch.LongTensor(attn_tokens)}, target
-
-
 # Method to ensemble NER outputs into one
 def convert_tags(tag, original_idxs):
     tag1, tag2= tag.split('.')[0], tag.split('.')[1]
