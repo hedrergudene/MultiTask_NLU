@@ -112,11 +112,17 @@ def main(
     # Part V: Evaluation (WIP)
     #
 
+    # Calculate and log metrics
+    print("Compute metrics on evaluation dataset:")
+    metrics_dct = evaluate_metrics(trainer)
+    wandb.log(metrics_dct)
+
     # End WB session
     print(f"End Weights and Biases session:")
     last_model=max([int(elem.split('-')[-1]) for elem in os.listdir(os.path.join(os.getcwd(),'output'))])
     shutil.move(os.path.join(os.getcwd(),'output',f"checkpoint-{last_model}"), os.path.join(f"{wandb.run.dir}",f"checkpoint-{last_model}"))
     wandb.finish()
+   
 
 if __name__=="__main__":
     fire.Fire(main)
