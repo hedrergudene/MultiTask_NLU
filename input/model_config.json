@@ -1,6 +1,0 @@
-{
-    "model_name":"roberta-base",
-    "dim":256,
-    "dropout":0.1,
-    "device":"cuda"
-}
