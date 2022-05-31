@@ -10,6 +10,7 @@
     "gradient_accumulation_steps":4,
     "learning_rate":5e-4,
     "weight_decay":1e-2,
+    "warmup_steps_factor":4,
     "label_smoothing":0.1,
     "early_stopping":5,
     "scheduler_mode":"min",
