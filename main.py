@@ -16,15 +16,6 @@ from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.fitter import CustomTrainer
 
-# Setup logs
-root = log.getLogger()
-root.setLevel(log.DEBUG)
-handler = log.StreamHandler(sys.stdout)
-handler.setLevel(log.DEBUG)
-formatter = log.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-root.addHandler(handler)
-
 # Main method. Fire automatically allign method arguments with parse commands from console
 def main(
         training_config:str="input/training_config.json",
@@ -49,18 +40,18 @@ def main(
     #
 
     # Get tools
-    log.info(f"Setup tools:")
+    print(f"Setup tools:")
     data, nlp, intent2idx, ner2idx, max_length, num_labels = setup_data(train_dct)
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
     train_text, val_text, train_intent, val_intent = train_test_split(data['utt'].values, data['intent'].values, test_size=.2, stratify=data['intent_lang'])
     # Build DataLoaders
-    log.info(f"Prepare datasets:")
+    print(f"Prepare datasets:")
     train_dts = IC_NER_Dataset(train_text, train_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
     val_dts = IC_NER_Dataset(val_text, val_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
     # Define model
-    log.info(f"Get model:")
+    print(f"Get model:")
     model = IC_NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
 
     #
@@ -68,7 +59,7 @@ def main(
     #
 
     # Set up arguments
-    log.info(f"Prepare training arguments:")
+    print(f"Prepare training arguments:")
     steps_per_epoch = int(.8*len(data))/(train_dct['batch_size']*train_dct['gradient_accumulation_steps'])
     logging_steps = steps_per_epoch if int(steps_per_epoch)==steps_per_epoch else int(steps_per_epoch)+1
     logging_steps = logging_steps//4
@@ -95,7 +86,7 @@ def main(
         fp16=bool(train_dct['fp16'])
     )
     # Trainer
-    log.info(f"Initialise HuggingFace Trainer:")
+    print(f"Initialise HuggingFace Trainer:")
     trainer = CustomTrainer(
         model,
         training_args,
@@ -108,7 +99,7 @@ def main(
     #
 
     # Trainer
-    log.info(f"Start model training:")
+    print(f"Start model training:")
     trainer.train()
 
     #
@@ -116,7 +107,7 @@ def main(
     #
 
     # End WB session
-    log.info(f"End Weights and Biases session:")
+    print(f"End Weights and Biases session:")
     wandb.finish()
 
 if __name__=="__main__":
