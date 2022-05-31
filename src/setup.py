@@ -39,7 +39,7 @@ def setup_data(train_dct:Dict,
         # Open file
         with open(os.path.join('input/1.0/data', elem), 'r') as json_file:
             json_list = list(json_file)
-        print(f"Processing language: {elem.split('.')[0]}")
+        log.info(f"Processing language: {elem.split('.')[0]}")
         # Iterate through all annotations
         for json_str in json_list:
             result = json.loads(json_str)
