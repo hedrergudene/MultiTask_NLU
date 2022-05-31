@@ -1,6 +1,7 @@
 # Requirements
 import numpy as np
 import torch
+import random
 
 # Set seed
 def seed_everything(seed=42):
