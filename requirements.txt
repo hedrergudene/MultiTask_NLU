@@ -4,5 +4,6 @@ spacy[cuda113]==3.3
 torch==1.11.0
 torchmetrics==0.8.2
 transformers==4.17.0
-wandb==0.12.16
+wandb==0.12.17
+pyyaml==5.4.1
 fire==0.4.0
