@@ -1,87 +1,47 @@
 # Requirements
 from .utils import *
 import numpy as np
+from tqdm import tqdm
+import logging as log
+from sklearn.metrics import accuracy_score, f1_score
 import torch
-import torchmetrics
 
-# Accuracy for text classification
-class AccIC(torch.nn.Module):
-    def __init__(self,
-                 num_classes:int=18,
-                 multi_class:bool=True,
-                ):
-        super(AccIC, self).__init__()
-        self.acc_ic = torchmetrics.Accuracy(threshold=0.5,
-                                            num_classes=num_classes,
-                                            multi_class=multi_class,
-                                            average="macro",
-                                            mdmc_average="samplewise",
-                                            )
-    
-    def forward(self,
-                input:torch.Tensor,
-                target:torch.Tensor,
-               ):
-        return self.acc_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu().type('torch.LongTensor')).item()
 
-# F1 score for text classification
-class F1IC(torch.nn.Module):
-    def __init__(self,
-                 num_classes:int=18,
-                 multi_class:bool=True,
-                ):
-        super(F1IC, self).__init__()
-        self.f1_ic = torchmetrics.F1Score(threshold=0.5,
-                                          num_classes=num_classes,
-                                          multi_class=multi_class,
-                                          average="macro",
-                                          mdmc_average="samplewise",
-                                          )
-    
-    def forward(self,
-                input:torch.Tensor,
-                target:torch.Tensor,
-               ):
-        return self.f1_ic(input['IC'].detach().cpu(), target['IC'].detach().cpu().type('torch.LongTensor')).item()
-
-# Accuracy for token classification
-class AccNER(torch.nn.Module):
-    def __init__(self,
-                 num_classes:int=167,
-                 multi_class:bool=False,
-                ):
-        super(AccNER, self).__init__()
-        self.acc_ner = torchmetrics.Accuracy(threshold=0.5,
-                                             #num_classes=num_classes,
-                                             ignore_index=-100,
-                                             multi_class=multi_class, 
-                                             #average="macro",
-                                             mdmc_average="samplewise",
-                                             )
-    
-    def forward(self,
-                input:torch.Tensor,
-                target:torch.Tensor,
-               ):
-        return self.acc_ner(torch.argmax(input['NER'], dim=-1).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
-    
-# F1 score for token classification
-class F1NER(torch.nn.Module):
-    def __init__(self,
-                 num_classes:int=167,
-                 multi_class:bool=False,
-                ):
-        super(F1NER, self).__init__()
-        self.f1_ner = torchmetrics.F1Score(threshold=0.5,
-                                           #num_classes=num_classes,
-                                           ignore_index=-100,
-                                           multi_class=multi_class, 
-                                           #average="macro",
-                                           mdmc_average="samplewise",
-                                           )
-    
-    def forward(self,
-                input:torch.Tensor,
-                target:torch.Tensor,
-               ):
-        return self.f1_ner(torch.argmax(input['NER'], dim=-1).detach().cpu(), target['NER'].detach().cpu().type('torch.LongTensor')).item()
+def evaluate_metrics(trainer):
+    # Setup
+    idx2ner = {v:k for k,v in trainer.eval_dataset.ner2idx.items()}
+    device = 'cuda' if not trainer.args.no_cuda else 'cpu'
+    val_dtl=torch.utils.data.DataLoader(trainer.eval_dataset,
+                                        batch_size=trainer.args.per_device_eval_batch_size,
+                                        num_workers=trainer.args.dataloader_num_workers,
+                                        )
+    accIC, f1IC, f1NER, prNER, recNER = [], [], [], [], []
+    # Create loop with custom metrics
+    log.info("Compute metrics:")
+    for batch in tqdm(iter(val_dtl)):
+        # Get labels
+        ic_labels = torch.squeeze(batch.get('labels')[:,:1]).detach().numpy()
+        ner_labels = batch.get('labels')[:,1:].detach().numpy()
+        batch = {k:v.to(device) for k,v in batch.items()}
+        # Get output
+        with torch.no_grad():
+            output = trainer.model(**batch)
+        ic_output = torch.argmax(output[:,:trainer.model.num_labels['IC']], dim=-1).detach().cpu().numpy()
+        ner_output = output[:,trainer.model.num_labels['IC']:].reshape((-1, trainer.model.max_length, trainer.model.num_labels['NER']))
+        ner_output = torch.argmax(ner_output, dim=-1).detach().cpu().numpy()
+        # Decode NER arrays
+        ner_labels = np.vectorize(idx2ner.get)(ner_labels)
+        ner_output = np.vectorize(idx2ner.get)(ner_output)
+        # Get metrics
+        accIC.append(accuracy_score(ic_labels, ic_output))
+        f1IC.append(f1_score(ic_labels, ic_output, average='macro'))
+        f1s, precision, recall = computeF1Score(ner_output, ner_labels)
+        f1NER.append(f1s)
+        prNER.append(precision)
+        recNER.append(recall)
+    return {'accuracy_IC':np.mean(accIC),
+            'f1_IC':np.mean(f1IC),
+            'f1_NER':np.mean(f1NER),
+            'precision_NER':np.mean(prNER),
+            'recall_NER':np.mean(recNER),
+            }
