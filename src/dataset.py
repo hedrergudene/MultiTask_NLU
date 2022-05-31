@@ -77,10 +77,10 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
             while b>c: # While tokens lie in the discourse of a specific entity
                 if (c>=a)&(b>=d): # If token is inside discourse
                     if beginning:
-                        targets[offset_index] = ner2idx['B-'+label]
+                        targets[offset_index] = self.ner2idx['B-'+label]
                         beginning = False
                     else:
-                        targets[offset_index] = ner2idx['I-'+label]
+                        targets[offset_index] = self.ner2idx['I-'+label]
                 count_token += 1
                 offset_index += 1 # Move to the next token
                 if offset_index>len(offsets)-1: # If next token is out of this entity range, jump to the next row of the df
