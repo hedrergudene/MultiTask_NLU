@@ -19,7 +19,7 @@ We will make use of the recently released [MASSIVE dataset](https://github.com/a
 Information about intent and entities within utterances is contained in the dataset.
 
 ## Model architecture
-![MTImage](images/MultiTask_image.PNG)
+![MTImage](input/MultiTask_image.PNG)
 
 
 
