@@ -15,6 +15,7 @@ from src.setup import setup_data
 from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.fitter import CustomTrainer
+from src.utils import seed_everything
 
 # Main method. Fire automatically allign method arguments with parse commands from console
 def main(
@@ -28,6 +29,7 @@ def main(
     #Training
     with open(os.path.join('input','training_config.json')) as f:
         train_dct = json.load(f)
+        seed_everything(train_dct['seed'])
     #Wandb
     with open(os.path.join('input','wandb_config.json')) as f:
         wandb_dct = json.load(f)
