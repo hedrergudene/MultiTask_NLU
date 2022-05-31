@@ -16,6 +16,7 @@ from src.setup import setup_data
 from src.dataset import IC_NER_Dataset
 from src.model import IC_NER_Model
 from src.fitter import CustomTrainer
+from src.metrics import evaluate_metrics
 from src.utils import seed_everything
 
 # Main method. Fire automatically allign method arguments with parse commands from console
