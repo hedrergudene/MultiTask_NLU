@@ -76,7 +76,7 @@ def main(
     training_args = TrainingArguments(
         output_dir=os.path.join(os.getcwd(),train_dct['filepath']),
         gradient_accumulation_steps=train_dct['gradient_accumulation_steps'],
-        warmup_steps=logging_steps,
+        warmup_steps=logging_steps*train_dct['warmup_steps_factor'],
         learning_rate=train_dct['learning_rate'],
         weight_decay=train_dct['weight_decay'],
         per_device_train_batch_size=train_dct['batch_size'],
