@@ -8,6 +8,7 @@ from tqdm import tqdm
 import spacy
 from transformers import AutoConfig, AutoTokenizer
 import logging as log
+from typing import Dict
 
 # Method to load data and compute 
 def setup_data(train_dct:Dict,
@@ -18,24 +19,23 @@ def setup_data(train_dct:Dict,
     #
 
     # Generate input directory and download data
-    if not os.path.isdir("/content/input"): os.makedirs("/content/input")
     response = requests.get(url, stream=True)
     if response.status_code == 200:
-        with open('/content/input/amazon-massive-dataset-1.0.tar.gz', 'wb') as f:
+        with open('input/amazon-massive-dataset-1.0.tar.gz', 'wb') as f:
             f.write(response.raw.read())
     # Extract files in input directory
-    with tarfile.open('/content/input/amazon-massive-dataset-1.0.tar.gz') as f:
-      f.extractall('/content/input/')
-    os.remove('/content/input/amazon-massive-dataset-1.0.tar.gz')
+    with tarfile.open('input/amazon-massive-dataset-1.0.tar.gz') as f:
+      f.extractall('input/')
+    os.remove('input/amazon-massive-dataset-1.0.tar.gz')
     # Create a dicitonary to gather all entities
     utterances = []
     intents = []
     lang = []
     ent_dct = {}
     # Loop through all languages
-    for elem in [file_id for file_id in os.listdir('/content/input/1.0/data') if file_id[:2]!='._']:
+    for elem in [file_id for file_id in os.listdir('input/1.0/data') if file_id[:2]!='._']:
         # Open file
-        with open(os.path.join('/content/input/1.0/data', elem), 'r') as json_file:
+        with open(os.path.join('input/1.0/data', elem), 'r') as json_file:
             json_list = list(json_file)
         print(f"Processing language: {elem.split('.')[0]}")
         # Iterate through all annotations
