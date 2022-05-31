@@ -26,6 +26,7 @@ def main(
     #
     # Part I: Read configuration files
     #
+    
     #Training
     with open(os.path.join('input','training_config.json')) as f:
         train_dct = json.load(f)
@@ -59,7 +60,9 @@ def main(
     #
     # Part III: Prepare Trainer
     #
-
+    
+    # Environment variables
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
     # Set up arguments
     print(f"Prepare training arguments:")
     steps_per_epoch = int(.8*len(data))/(train_dct['batch_size']*train_dct['gradient_accumulation_steps'])
