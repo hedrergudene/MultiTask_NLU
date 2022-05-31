@@ -2,6 +2,7 @@
 import logging as log
 import json
 import os
+import shutil
 import sys
 import torch
 import wandb
@@ -48,7 +49,7 @@ def main(
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
-    train_text, val_text, train_intent, val_intent = train_test_split(data['utt'].values, data['intent'].values, test_size=.2, stratify=data['intent_lang'])
+    train_text, val_text, train_intent, val_intent = train_test_split(data['utt'].values, data['intent'].values, test_size=.2, stratify=data['intent_lang'], random_state=train_dct['seed'])
     # Build DataLoaders
     print(f"Prepare datasets:")
     train_dts = IC_NER_Dataset(train_text, train_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
@@ -113,6 +114,8 @@ def main(
 
     # End WB session
     print(f"End Weights and Biases session:")
+    last_model=max([int(elem.split('-')[-1]) for elem in os.listdir(os.path.join(os.getcwd(),'output'))])
+    shutil.move(os.path.join(os.getcwd(),'output',f"checkpoint-{last_model}"), os.path.join(f"{wandb.run.dir}",f"checkpoint-{last_model}"))
     wandb.finish()
 
 if __name__=="__main__":
