@@ -12,17 +12,23 @@ class LinearBlock(torch.nn.Module):
     def __init__(self,
                  input_dim:int,
                  output_dim:int,
+                 activation:bool=True,
                  dropout:float=.25,
                  device:str='cuda:0',
                  ):
         super(LinearBlock, self).__init__()
         # Parameters
-        self.block = torch.nn.Sequential(torch.nn.Dropout(dropout),
-                                         torch.nn.Linear(input_dim, output_dim, device=device),
-                                         torch.nn.LayerNorm(output_dim, device=device),
-                                         torch.nn.GELU(),
-                                        )
-    
+        if activation:
+            self.block = torch.nn.Sequential(torch.nn.Dropout(dropout),
+                                             torch.nn.Linear(input_dim, output_dim, device=device),
+                                             torch.nn.LayerNorm(output_dim, device=device),
+                                             torch.nn.GELU(),
+                                            )
+        else:
+            self.block = torch.nn.Sequential(torch.nn.Dropout(dropout),
+                                             torch.nn.Linear(input_dim, output_dim, device=device),
+                                            )
+
     def forward(self, x):
         return self.block(x)
 
@@ -36,8 +42,8 @@ class DataFormat(torch.nn.Module):
                  ):
         super(DataFormat, self).__init__()
         # Parameters
-        self.Lblock_ic = LinearBlock(hidden_size, dim, dropout, device)
-        self.Lblock_ner = LinearBlock(hidden_size, dim, dropout, device)
+        self.Lblock_ic = LinearBlock(hidden_size, dim, True, dropout, device)
+        self.Lblock_ner = LinearBlock(hidden_size, dim, True, dropout, device)
     
     def forward(self, ic_tokens, ner_tokens):
         ic_tokens = self.Lblock_ic(ic_tokens)
@@ -55,13 +61,13 @@ class NER2IC(torch.nn.Module):
                  ):
         super(NER2IC, self).__init__()
         # Parameters
-        self.Lblock_prior = LinearBlock(dim, 1, dropout, device)
-        self.Lblock_post = LinearBlock(dim, num_labels_ic, dropout, device)
+        self.Lblock_prior = LinearBlock(dim, dim//2, True, dropout, device)
+        self.Lblock_post = LinearBlock(dim//2, num_labels_ic, False, dropout, device)
     
     def forward(self, ic_tokens, ner_tokens):
         ner_tokens = torch.mean(ner_tokens, dim=1, keepdim=True)
         ic_tokens = torch.bmm(torch.unsqueeze(ic_tokens, dim=-1), ner_tokens)
-        ic_tokens = torch.squeeze(self.Lblock_prior(ic_tokens))
+        ic_tokens = torch.mean(self.Lblock_prior(ic_tokens), dim=1)
         ic_tokens = self.Lblock_post(ic_tokens)
         return ic_tokens
 
@@ -75,28 +81,30 @@ class IC2NER(torch.nn.Module):
                  ):
         super(IC2NER, self).__init__()
         # Parameters
-        self.Lblock = LinearBlock(1, num_labels_ner, dropout, device)
+        self.Lblock = LinearBlock(dim, num_labels_ner, False, dropout, device)
     
     def forward(self, ic_tokens, ner_tokens):
-        ic_tokens = torch.unsqueeze(ic_tokens, dim=-1)
-        ic_tokens = self.Lblock(ic_tokens)
-        ner_tokens = torch.bmm(ner_tokens, ic_tokens)
-        return ner_tokens
+        ic_tokens = torch.unsqueeze(torch.mean(ic_tokens, dim=1, keepdim=True), dim=-1)
+        ner_output = ner_tokens*ic_tokens
+        ner_output = self.Lblock(ner_output)
+        return ner_output
 
 
 # Model
 class IC_NER_Model(torch.nn.Module):
     def __init__(self,
                  model_name:str,
+                 max_length:int,
                  num_labels:Dict,
-                 dim:int=128,
+                 dim:int=256,
                  dropout:float=.25,
                  device:str='cuda:0',
                  ):
         super(IC_NER_Model, self).__init__()
         # Parameters
+        self.max_length = max_length
         self.num_labels = num_labels
-        if dim>=max(num_labels['IC'],num_labels['NER']):
+        if dim>=max(self.num_labels['IC'],self.num_labels['NER']):
             self.dim = dim
         else:
             self.dim = max(num_labels['IC'],num_labels['NER'])
@@ -109,7 +117,6 @@ class IC_NER_Model(torch.nn.Module):
                 "add_pooling_layer": False,
             }
         )
-        self.pos_embeddings = config.max_position_embeddings
         self.hidden_size = config.hidden_size
         self.transformer = AutoModel.from_config(config).to(device)
         # Layers
@@ -117,24 +124,23 @@ class IC_NER_Model(torch.nn.Module):
         self.ic_layer = NER2IC(self.dim, self.num_labels['IC'], dropout, device)
         self.ner_layer = IC2NER(self.dim, self.num_labels['NER'], dropout, device)
     
-    def forward(self, tokens, attn_mask):
+    def forward(self, input_ids, attention_mask, labels=None):
         # Input
-        ic_tokens, ner_tokens = self._disentangle_transformer(tokens, attn_mask)
+        ic_tokens, ner_tokens = self._disentangle_transformer(input_ids, attention_mask)
         ic_tokens, ner_tokens = self.LFormat(ic_tokens, ner_tokens)
-        # Info sharing
-        ner_output = self.ner_layer(ic_tokens, ner_tokens)
+        # Info sharing. Reshape NER output as both will be concatenated to be 
+        # a single output
+        ner_output = self.ner_layer(ic_tokens, ner_tokens).reshape((-1, self.max_length*self.num_labels['NER']))
         ic_output = self.ic_layer(ic_tokens, ner_tokens)
         # Output
-        return {'IC':ic_output,
-                'NER':ner_output,
-                }
+        return torch.cat([ic_output, ner_output], dim=-1)
     
     def _disentangle_transformer(self,
-                                 tokens:torch.Tensor,
-                                 attn_mask:torch.Tensor,
+                                 input_ids:torch.Tensor,
+                                 attention_mask:torch.Tensor,
                                  ):
         # Get HuggingFace output
-        output = self.transformer(tokens, attn_mask)
+        output = self.transformer(input_ids=input_ids, attention_mask=attention_mask)
         # Check that output has the desired attribute
         if not hasattr(output, 'last_hidden_state'):
             raise AttributeError(f"Transformers output does not have the attribute 'last_hidden_state'. Please check imported backbone.")
