@@ -1,6 +1,7 @@
 # Requirements
 import torch
 import spacy
+import numpy as np
 from typing import Dict
 from transformers import AutoTokenizer
 
