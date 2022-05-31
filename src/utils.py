@@ -2,6 +2,16 @@
 import numpy as np
 import torch
 
+# Set seed
+def seed_everything(seed=42):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+
 # Method to ensemble NER outputs into one
 def convert_tags(tag, original_idxs):
     tag1, tag2= tag.split('.')[0], tag.split('.')[1]
