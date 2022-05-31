@@ -1,4 +1,5 @@
 # Requirements
+import os
 import requests
 import itertools
 import tarfile
