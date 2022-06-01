@@ -16,7 +16,7 @@ class CustomTrainer(Trainer):
         ner_logits = outputs[:,model.num_labels['IC']:].reshape((-1, model.max_length, model.num_labels['NER']))
         # compute custom loss
         loss_fn_ic = torch.nn.CrossEntropyLoss(label_smoothing=.1)
-        loss_fn_ner = FocalLoss(gamma = 2., n_classes = model.num_labels['NER'], device = model.device)
+        loss_fn_ner = FocalLoss(gamma = 2., n_classes = model.num_labels['NER'])
         ic_loss = loss_fn_ic(ic_logits, ic_labels)
         ner_loss = loss_fn_ner(ner_logits.permute((0,2,1)), ner_labels)
         return (.5*(ic_loss+ner_loss), outputs) if return_outputs else .5*(ic_loss+ner_loss)
