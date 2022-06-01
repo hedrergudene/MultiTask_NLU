@@ -28,7 +28,8 @@ This experiment has been integrated with Weights and Biases to track all metrics
 
 
 ## Quickstart code
-WIP
+You can start by using this notebook [![Open Notebook](https://colab.research.google.com/assets/colab-badge.svg)](/Quickstart.ipynb) in which you can easily get up-to-speed with your own data and customise parameters.
+
 
 ## License
 Released under [MIT](/LICENSE) by [@hedrergudene](https://github.com/hedrergudene).
