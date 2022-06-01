@@ -15,9 +15,9 @@ def evaluate_metrics(trainer):
                                         batch_size=trainer.args.per_device_eval_batch_size,
                                         num_workers=trainer.args.dataloader_num_workers,
                                         )
-    accIC, f1IC, f1NER, prNER, recNER = [], [], [], [], []
+    IC_LABELS, IC_OUTPUT, NER_LABELS, NER_OUTPUT = [], [], [], []
     # Create loop with custom metrics
-    log.info("Compute metrics:")
+    log.info("Stack predictions:")
     for batch in tqdm(iter(val_dtl)):
         # Get labels
         ic_labels = torch.squeeze(batch.get('labels')[:,:1]).detach().numpy()
@@ -32,16 +32,19 @@ def evaluate_metrics(trainer):
         # Decode NER arrays
         ner_labels = np.vectorize(idx2ner.get)(ner_labels)
         ner_output = np.vectorize(idx2ner.get)(ner_output)
-        # Get metrics
-        accIC.append(accuracy_score(ic_labels, ic_output))
-        f1IC.append(f1_score(ic_labels, ic_output, average='macro'))
-        f1s, precision, recall = computeF1Score(ner_output, ner_labels)
-        f1NER.append(f1s)
-        prNER.append(precision)
-        recNER.append(recall)
-    return {'accuracy_IC':np.mean(accIC),
-            'f1_IC':np.mean(f1IC),
-            'f1_NER':np.mean(f1NER),
-            'precision_NER':np.mean(prNER),
-            'recall_NER':np.mean(recNER),
+        # Append results
+        IC_LABELS.append(ic_labels)
+        IC_OUTPUT.append(ic_output)
+        NER_LABELS.append(ner_labels)
+        NER_OUTPUT.append(ner_output)
+    # Compute metrics
+    log.info("Compute metrics:")
+    accIC = accuracy_score(np.concatenate(IC_LABELS), np.concatenate(IC_OUTPUT))
+    f1IC = f1_score(np.concatenate(IC_LABELS), np.concatenate(IC_OUTPUT), average='macro')
+    f1NER, precision, recall = computeF1Score(np.concatenate(NER_OUTPUT), np.concatenate(NER_LABELS))
+    return {'accuracy_IC':accIC,
+            'f1_IC':f1IC,
+            'f1_NER':f1NER,
+            'precision_NER':precision,
+            'recall_NER':recall,
             }
