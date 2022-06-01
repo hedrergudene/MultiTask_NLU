@@ -128,7 +128,7 @@ def main(
     metrics_dct, lang_dct = evaluate_metrics(trainer, val_dtl, language_arr)
 
     # Log metrics
-    lang_df = pd.DataFrame(lang_metrics).reset_index().melt(id_vars='index')
+    lang_df = pd.DataFrame(lang_dct).reset_index().melt(id_vars='index')
     
     fig_lang_IC = px.bar(lang_df.loc[lang_df['index']=='f1_IC',:],
                          x="variable",
@@ -146,7 +146,7 @@ def main(
 
     wandb.log({"Intent classification f1-score per language": fig_lang_IC})
     wandb.log({"Entity recognition f1-score per language": fig_lang_NER})
-    wandb.log({'global_'+k:v for k,v in global_metrics.items()})
+    wandb.log({'global_'+k:v for k,v in metrics_dct.items()})
 
     # End WB session
     print(f"End Weights and Biases session:")
