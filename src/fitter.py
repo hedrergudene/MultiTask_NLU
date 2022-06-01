@@ -1,6 +1,7 @@
 # Requirements
 from transformers import Trainer
 import torch
+from src.loss import FocalLoss
 
 class CustomTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -14,7 +15,8 @@ class CustomTrainer(Trainer):
         ic_logits = outputs[:,:model.num_labels['IC']]
         ner_logits = outputs[:,model.num_labels['IC']:].reshape((-1, model.max_length, model.num_labels['NER']))
         # compute custom loss
-        loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=.1)
-        ic_loss = loss_fn(ic_logits, ic_labels)
-        ner_loss = loss_fn(ner_logits.permute((0,2,1)), ner_labels)
+        loss_fn_ic = torch.nn.CrossEntropyLoss(label_smoothing=.1)
+        loss_fn_ner = FocalLoss(gamma = 2., n_classes = model.num_labels['NER'], device = model.device)
+        ic_loss = loss_fn_ic(ic_logits, ic_labels)
+        ner_loss = loss_fn_ner(ner_logits.permute((0,2,1)), ner_labels)
         return (.5*(ic_loss+ner_loss), outputs) if return_outputs else .5*(ic_loss+ner_loss)
