@@ -7,14 +7,10 @@ from sklearn.metrics import accuracy_score, f1_score
 import torch
 
 
-def evaluate_metrics(trainer):
+def evaluate_metrics(trainer, val_dtl, language_arr):
     # Setup
     idx2ner = {v:k for k,v in trainer.eval_dataset.ner2idx.items()}
     device = 'cuda' if not trainer.args.no_cuda else 'cpu'
-    val_dtl=torch.utils.data.DataLoader(trainer.eval_dataset,
-                                        batch_size=trainer.args.per_device_eval_batch_size,
-                                        num_workers=trainer.args.dataloader_num_workers,
-                                        )
     IC_LABELS, IC_OUTPUT, NER_LABELS, NER_OUTPUT = [], [], [], []
     # Create loop with custom metrics
     log.info("Stack predictions:")
@@ -37,14 +33,23 @@ def evaluate_metrics(trainer):
         IC_OUTPUT.append(ic_output)
         NER_LABELS.append(ner_labels)
         NER_OUTPUT.append(ner_output)
-    # Compute metrics
-    log.info("Compute metrics:")
-    accIC = accuracy_score(np.concatenate(IC_LABELS), np.concatenate(IC_OUTPUT))
-    f1IC = f1_score(np.concatenate(IC_LABELS), np.concatenate(IC_OUTPUT), average='macro')
-    f1NER, precision, recall = computeF1Score(np.concatenate(NER_OUTPUT), np.concatenate(NER_LABELS))
-    return {'accuracy_IC':accIC,
-            'f1_IC':f1IC,
-            'f1_NER':f1NER,
-            'precision_NER':precision,
-            'recall_NER':recall,
-            }
+    # Build final objects
+    IC_LABELS = np.concatenate(IC_LABELS)
+    IC_OUTPUT = np.concatenate(IC_OUTPUT)
+    NER_LABELS = np.concatenate(NER_LABELS)
+    NER_OUTPUT = np.concatenate(NER_OUTPUT)
+    # Compute global metrics
+    log.info("Compute global metrics:")
+    accIC = accuracy_score(IC_LABELS, IC_OUTPUT)
+    f1IC = f1_score(IC_LABELS, IC_OUTPUT, average='macro')
+    f1NER, precision, recall = computeF1Score(NER_OUTPUT, NER_LABELS)
+    global_metrics={'accuracy_IC':accIC,'f1_IC':f1IC,'f1_NER':f1NER,'precision_NER':precision,'recall_NER':recall}
+    # Compute language-wise metrics
+    log.info("Compute language-wise metrics:")
+    lang_metrics={}
+    for lang in tqdm(np.unique(language_arr)):
+        accIC = accuracy_score(IC_LABELS[language_arr==lang], IC_OUTPUT[language_arr==lang])
+        f1IC = f1_score(IC_LABELS[language_arr==lang], IC_OUTPUT[language_arr==lang], average='macro')
+        f1NER, precision, recall = computeF1Score(NER_OUTPUT[language_arr==lang], NER_LABELS[language_arr==lang])
+        lang_metrics[lang]={'accuracy_IC':accIC,'f1_IC':f1IC,'f1_NER':f1NER,'precision_NER':precision,'recall_NER':recall}
+    return global_metrics, lang_metrics
