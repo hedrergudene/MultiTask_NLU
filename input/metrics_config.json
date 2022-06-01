@@ -1,5 +1,0 @@
-{"threshold":0.4,
-    "num_classes":17,
-    "average":"macro",
-    "mdmc_average":"samplewise"
-    }
