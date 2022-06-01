@@ -146,7 +146,7 @@ def main(
 
     wandb.log({"Intent classification f1-score per language": fig_lang_IC})
     wandb.log({"Entity recognition f1-score per language": fig_lang_NER})
-    wandb.log({'global_'+k:v for k,v in metrics_dct.items()})
+    wandb.log({'Global metrics':wandb.Table(data=[list(metrics_dct.values())], columns=metrics_dct.keys())})
 
     # End WB session
     print(f"End Weights and Biases session:")
