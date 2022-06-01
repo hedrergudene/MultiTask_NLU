@@ -50,11 +50,11 @@ def main(
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
-    train_text, val_text, train_intent, val_intent = train_test_split(data['utt'].values, data['intent'].values, test_size=.2, stratify=data['intent_lang'], random_state=train_dct['seed'])
-    # Build DataLoaders
-    print(f"Prepare datasets:")
-    train_dts = IC_NER_Dataset(train_text, train_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
-    val_dts = IC_NER_Dataset(val_text, val_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
+    train_idx, val_idx, train_intent, val_intent = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
+    # Build datasets
+    log.info(f"Prepare datasets:")
+    train_dts = IC_NER_Dataset(data.loc[train_idx,'utt'].values, train_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
+    val_dts = IC_NER_Dataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
     # Define model
     print(f"Get model:")
     model = IC_NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
@@ -113,10 +113,19 @@ def main(
     # Part V: Evaluation (WIP)
     #
 
+    # Prepare evaluation DataLoader and language list
+    val_dtl = torch.utils.data.DataLoader(val_dts,
+                                          batch_size=trainer.args.per_device_eval_batch_size,
+                                          num_workers=trainer.args.dataloader_num_workers,
+                                          shuffle=False, # Important to be aligned with lang list
+                                          )
+    language_arr = data.loc[val_idx, 'language'].values
+
     # Calculate and log metrics
     print("Compute metrics on evaluation dataset:")
-    metrics_dct = evaluate_metrics(trainer)
+    metrics_dct, lang_dct = evaluate_metrics(trainer, val_dtl, language_arr)
     wandb.log(metrics_dct)
+    wandb.log(lang_dct)
 
     # End WB session
     print(f"End Weights and Biases session:")
