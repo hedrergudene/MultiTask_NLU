@@ -8,6 +8,8 @@ import torch
 import wandb
 import fire
 import numpy as np
+import pandas as pd
+import plotly_express as px
 from transformers import TrainingArguments
 from sklearn.model_selection import train_test_split
 
@@ -121,11 +123,30 @@ def main(
                                           )
     language_arr = data.loc[val_idx, 'language'].values
 
-    # Calculate and log metrics
+    # Calculate metrics
     print("Compute metrics on evaluation dataset:")
     metrics_dct, lang_dct = evaluate_metrics(trainer, val_dtl, language_arr)
-    wandb.log(metrics_dct)
-    wandb.log(lang_dct)
+
+    # Log metrics
+    lang_df = pd.DataFrame(lang_metrics).reset_index().melt(id_vars='index')
+    
+    fig_lang_IC = px.bar(lang_df.loc[lang_df['index']=='f1_IC',:],
+                         x="variable",
+                         y="value",
+                         color="variable",
+                         title="Intent classification f1-score per language",
+                         ).update_xaxes(categoryorder='total descending')
+
+    fig_lang_NER = px.bar(lang_df.loc[lang_df['index']=='f1_NER',:],
+                          x="variable",
+                          y="value",
+                          color="variable",
+                          title="Entity recognition f1-score per language",
+                          ).update_xaxes(categoryorder='total descending')
+
+    wandb.log({"Intent classification f1-score per language": fig_lang_IC})
+    wandb.log({"Entity recognition f1-score per language": fig_lang_NER})
+    wandb.log({'global_'+k:v for k,v in global_metrics.items()})
 
     # End WB session
     print(f"End Weights and Biases session:")
