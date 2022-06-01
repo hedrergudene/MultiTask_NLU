@@ -3,7 +3,7 @@
 ---
 ## Table of contents
 - [1. Introduction](#introduction)
-- [2. Model architecture](#model-architecture)
+- [2. Implementation features](#implementation-features)
 - [3. Monitoring integration](#monitoring-integration)
 - [4. Quickstart code](#quickstart-code)
 - [5. License](#license)
@@ -18,7 +18,18 @@ We will make use of the recently released [MASSIVE dataset](https://github.com/a
 
 Information about intent and entities within utterances is contained in the dataset.
 
-## Model architecture
+## Implementation features
+
+As it has already been mentioned, the architecture we use combines both text and token classification from a single feature extractor. To that end, we have to provide utterance intent and entity labelling. Some of the most remarkable components are:
+
+* Text tokenisation and entity labels are included in dataset collator for memory efficiency purposes.
+* Initial unification of hidden size to enable individualised processing of each problem.
+* Relational modules to combine IC and NER information in both directions.
+* Use of categorical crossentropy loss function for the IC branch, and focal loss function with $\gamma=2$ for the NER one. Final loss function is the average of both losses. Label smoothing for the first loss component, and gamma  parameter for the second, can be customised in the `training_config.json` file.
+* Simple linear decay learning rate scheduler with warm start.
+
+A visual description of the implementation is shown now:
+
 ![MTImage](input/MultiTask_image.PNG)
 
 
