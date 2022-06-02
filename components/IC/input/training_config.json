@@ -1,0 +1,19 @@
+{
+    "HuggingFace_model":"xlm-roberta-base",
+    "dropout":0.25,
+    "batch_size":128,
+    "epochs":5,
+    "dataloader_num_workers":4,
+    "gradient_accumulation_steps":4,
+    "learning_rate":1e-4,
+    "weight_decay":1e-2,
+    "warmup_steps_factor":1,
+    "label_smoothing":0.1,
+    "early_stopping":5,
+    "scheduler_mode":"min",
+    "verbose_steps":10,
+    "filepath":"output/",
+    "device":"cuda",
+    "fp16":1,
+    "seed":123
+}

@@ -15,8 +15,8 @@ from sklearn.model_selection import train_test_split
 
 # Dependencies
 from src.setup import setup_data
-from src.dataset import IC_NER_Dataset
-from src.model import IC_NER_Model
+from src.dataset import IC_Dataset
+from src.model import IC_Model
 from src.fitter import CustomTrainer
 from src.metrics import evaluate_metrics
 from src.utils import seed_everything
@@ -32,11 +32,11 @@ def main(
     #
     
     #Training
-    with open(os.path.join('input','training_config.json')) as f:
+    with open(training_config) as f:
         train_dct = json.load(f)
         seed_everything(train_dct['seed'])
     #Wandb
-    with open(os.path.join('input','wandb_config.json')) as f:
+    with open(wandb_config) as f:
         wandb_dct = json.load(f)
         os.environ['WANDB_API_KEY'] = wandb_dct['WB_KEY']
         os.environ['WANDB_USERNAME'] = wandb_dct['WB_ENTITY']
@@ -48,18 +48,18 @@ def main(
 
     # Get tools
     print(f"Setup tools:")
-    data, nlp, intent2idx, ner2idx, max_length, num_labels = setup_data(train_dct)
+    data, intent2idx, max_length, num_labels = setup_data(train_dct)
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
     train_idx, val_idx, train_intent, val_intent = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
     # Build datasets
     log.info(f"Prepare datasets:")
-    train_dts = IC_NER_Dataset(data.loc[train_idx,'utt'].values, train_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
-    val_dts = IC_NER_Dataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['HuggingFace_model'], max_length, nlp, intent2idx, ner2idx)
+    train_dts = IC_Dataset(data.loc[train_idx,'utt'].values, train_intent, train_dct['HuggingFace_model'], max_length, intent2idx)
+    val_dts = IC_Dataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['HuggingFace_model'], max_length, intent2idx)
     # Define model
     print(f"Get model:")
-    model = IC_NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = IC_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
 
     #
     # Part III: Prepare Trainer
@@ -137,15 +137,7 @@ def main(
                          title="Intent classification f1-score per language",
                          ).update_xaxes(categoryorder='total descending')
 
-    fig_lang_NER = px.bar(lang_df.loc[lang_df['index']=='f1_NER',:],
-                          x="variable",
-                          y="value",
-                          color="variable",
-                          title="Entity recognition f1-score per language",
-                          ).update_xaxes(categoryorder='total descending')
-
     wandb.log({"Intent classification f1-score per language": fig_lang_IC})
-    wandb.log({"Entity recognition f1-score per language": fig_lang_NER})
     wandb.log({'Global metrics':wandb.Table(data=[list(metrics_dct.values())], columns=list(metrics_dct.keys()))})
 
     # End WB session

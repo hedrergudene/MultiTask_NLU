@@ -3,10 +3,11 @@
 ---
 ## Table of contents
 - [1. Introduction](#introduction)
-- [2. Implementation features](#implementation-features)
-- [3. Monitoring integration](#monitoring-integration)
-- [4. Quickstart code](#quickstart-code)
-- [5. License](#license)
+- [2. Repo structure](#repo-structure)
+- [3. MultiTask implementation features](#multitask-implementation-features)
+- [4. Monitoring integration](#monitoring-integration)
+- [5. Quickstart code](#quickstart-code)
+- [6. License](#license)
 ---
 
 ## Introduction
@@ -16,9 +17,34 @@ We will make use of the recently released [MASSIVE dataset](https://github.com/a
 
 > MASSIVE is a parallel dataset of > 1M utterances across 51 languages with annotations for the Natural Language Understanding tasks of intent prediction and slot annotation. Utterances span 60 intents and include 55 slot types. MASSIVE was created by localizing the SLURP dataset, composed of general Intelligent Voice Assistant single-shot interactions.
 
-Information about intent and entities within utterances is contained in the dataset.
+Information about intent and entities within utterances is contained in the dataset. The purpose of this repository is to find a place where, by simply modifying the `setup_data` method, you can get up to speed with your text-token classification downstream tasks, being able to compare the performance of the MulltiTask solution to the baseline isolated ones.
 
-## Implementation features
+
+## Repo structure
+The repository contains three components, `IC`, `MultiTask` and `NER`. Each of those contains a structure like the following one:
+
+<details>
+<summary>
+Click here to find out!
+</summary>
+
+    ├── src                                         # Compiled files (alternatively `dist`)
+    │   ├── dataset.py                              # Method that structures and transforms data
+    │   ├── loss.py                                 # Custom function to meet our needs during training
+    │   ├── model.py                                # Core script containing the architecture of the model
+    │   ├── fitter.py                               # HuggingFace custom training wrapper
+    │   └── ...         
+    ├── input                                       # Configuration files, datasets,...
+    │   ├── info.json                               # Configuration file for datasets information
+    │   ├── training_config.json                    # Configuration file for model architecture & training (batch_size, learning_rate,...)
+    │   └── wandb_config.json                       # Credentiales for Weights and Biases API usage
+    ├── main.py                                     # Main script to run the code of the component
+    └── requirements.txt                            # Docker code to build an image encapsulating the code
+</details>
+
+
+
+## MultiTask implementation features
 
 As it has already been mentioned, the architecture we use combines both text and token classification from a single feature extractor. To that end, we have to provide utterance intent and entity labelling. Some of the most remarkable components are:
 
@@ -30,9 +56,9 @@ As it has already been mentioned, the architecture we use combines both text and
 
 A visual description of the implementation is shown now:
 
-![MTImage](input/MultiTask_image.PNG)
+![MTImage](images/MultiTask_image.PNG)
 
-
+You can also make use of the `IC` and `NER` components to compare with *baseline* models, solving those tasks separatedly.
 
 ## Monitoring integration
 This experiment has been integrated with Weights and Biases to track all metrics, hyperparameters, callbacks and GPU performance. You only need to adapt the parameters in the `wandb_config.json` configuration file to keep track of the model training and evaluation. An example is shown [here](https://wandb.ai/azm630/MultiTask_NLU).
