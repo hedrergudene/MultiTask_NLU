@@ -59,7 +59,7 @@ def main(
     val_dts = NER_Dataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
     # Define model
     print(f"Get model:")
-    model = NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dropout'], train_dct['device'])
 
     #
     # Part III: Prepare Trainer
