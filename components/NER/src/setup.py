@@ -31,6 +31,7 @@ def setup_data(train_dct:Dict,
     os.remove('input/amazon-massive-dataset-1.0.tar.gz')
     # Create a dicitonary to gather all entities
     utterances = []
+    intents = []
     lang = []
     ent_dct = {}
     # Loop through all languages
@@ -43,6 +44,7 @@ def setup_data(train_dct:Dict,
         for json_str in json_list:
             result = json.loads(json_str)
             utterances.append(result['utt'])
+            intents.append(result['intent'])
             lang.append(elem.split('.')[0])
             # Iterate through all possible entities
             str_sample = result['annot_utt']
@@ -57,7 +59,7 @@ def setup_data(train_dct:Dict,
                 # Update string
                 str_sample = str_sample[str_sample.find(']')+1:]
     # Load and gather data
-    data = pd.DataFrame({'utt':utterances, 'language':lang})
+    data = pd.DataFrame({'utt':utterances, 'intent':intents, 'language':lang})
 
     #
     # Part II: Tokenizer and data insights

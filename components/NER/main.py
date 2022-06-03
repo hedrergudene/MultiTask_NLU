@@ -52,11 +52,11 @@ def main(
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
-    train_idx, val_idx, train_intent, val_intent = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
+    train_idx, val_idx, _, _ = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
     # Build datasets
     log.info(f"Prepare datasets:")
-    train_dts = NER_Dataset(data.loc[train_idx,'utt'].values, train_intent, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
-    val_dts = NER_Dataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
+    train_dts = NER_Dataset(data.loc[train_idx,'utt'].values, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
+    val_dts = NER_Dataset(data.loc[val_idx,'utt'].values, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
     # Define model
     print(f"Get model:")
     model = NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dropout'], train_dct['device'])
