@@ -9,7 +9,6 @@ from transformers import AutoTokenizer
 class NER_Dataset(torch.utils.data.Dataset):
     def __init__(self,
                  corpus,
-                 intents,
                  model_name:str,
                  max_length:int,
                  nlp,
@@ -17,7 +16,6 @@ class NER_Dataset(torch.utils.data.Dataset):
                  ):
         # Parameters
         self.corpus = corpus
-        self.intents = intents
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.max_length = max_length
         self.nlp = nlp
