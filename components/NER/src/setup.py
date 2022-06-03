@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import spacy
-from transformers import AutoConfig, AutoTokenizer
+from transformers import AutoTokenizer
 import logging as log
 from typing import Dict
 
@@ -31,7 +31,6 @@ def setup_data(train_dct:Dict,
     os.remove('input/amazon-massive-dataset-1.0.tar.gz')
     # Create a dicitonary to gather all entities
     utterances = []
-    intents = []
     lang = []
     ent_dct = {}
     # Loop through all languages
@@ -44,7 +43,6 @@ def setup_data(train_dct:Dict,
         for json_str in json_list:
             result = json.loads(json_str)
             utterances.append(result['utt'])
-            intents.append(result['intent'])
             lang.append(elem.split('.')[0])
             # Iterate through all possible entities
             str_sample = result['annot_utt']
@@ -59,7 +57,7 @@ def setup_data(train_dct:Dict,
                 # Update string
                 str_sample = str_sample[str_sample.find(']')+1:]
     # Load and gather data
-    data = pd.DataFrame({'utt':utterances, 'intent':intents, 'language':lang})
+    data = pd.DataFrame({'utt':utterances, 'language':lang})
 
     #
     # Part II: Tokenizer and data insights
@@ -68,18 +66,14 @@ def setup_data(train_dct:Dict,
     # Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(train_dct['HuggingFace_model'])
     # Data insights
-    ## IC
-    intent2idx = {k:v for k,v in zip(data['intent'].sort_values().unique(), range(data['intent'].nunique()))}
-    idx2intent = {v:k for k,v in intent2idx.items()}
     ## NER
     num_tags = num_tags = len(list(train_dct["scheme"]))*len(ent_dct.keys())
     ner2idx = {(str(elem[0])+"-"+str(elem[1])):i for i,elem in zip(range(1,num_tags+1), itertools.product(list(train_dct["scheme"]),list(ent_dct.keys())))}
     ner2idx['O'] = 0 # Add outside tag
     # UPDATE: REMOVE -100 TOKEN
     #ner2idx['PAD'] = -100 # Add padding tag
-    idx2ner = {v:k for k,v in ner2idx.items()}
     ## Num labels
-    num_labels = {'IC':len(intent2idx), 'NER':len(ner2idx)}
+    num_labels = len(ner2idx)
 
 
     #
@@ -122,4 +116,4 @@ def setup_data(train_dct:Dict,
     log.info(f"Recommended maximum length: {max_length}")
 
     # Exit
-    return data, nlp, intent2idx, ner2idx, max_length, num_labels
+    return data, nlp, ner2idx, max_length, num_labels

@@ -48,7 +48,7 @@ def main(
 
     # Get tools
     print(f"Setup tools:")
-    data, nlp, intent2idx, ner2idx, max_length, num_labels = setup_data(train_dct)
+    data, nlp, ner2idx, max_length, num_labels = setup_data(train_dct)
     train_dct['max_length'] = max_length
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
