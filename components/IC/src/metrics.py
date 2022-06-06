@@ -9,7 +9,6 @@ import torch
 
 def evaluate_metrics(trainer, val_dtl, language_arr):
     # Setup
-    idx2ner = {v:k for k,v in trainer.eval_dataset.ner2idx.items()}
     device = 'cuda' if not trainer.args.no_cuda else 'cpu'
     IC_LABELS, IC_OUTPUT = [], []
     # Create loop with custom metrics
