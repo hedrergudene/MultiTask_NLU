@@ -6,8 +6,9 @@
 - [2. Repo structure](#repo-structure)
 - [3. MultiTask implementation features](#multitask-implementation-features)
 - [4. Monitoring integration](#monitoring-integration)
-- [5. Quickstart code](#quickstart-code)
-- [6. License](#license)
+- [5. Streamlit app deployment](#streamlit-app-deployment)
+- [6. Quickstart code](#quickstart-code)
+- [7. License](#license)
 ---
 
 ## Introduction
@@ -21,7 +22,7 @@ Information about intent and entities within utterances is contained in the data
 
 
 ## Repo structure
-The repository contains three components, `IC`, `MultiTask` and `NER`. Each of those contains a structure like the following one:
+The repository contains four components: `NLU_streamlit_app`, `IC`, `MultiTask` and `NER`. The first one is prepared to run a pretrained model checkpoint in a dockerised Streamlit app. Each of the remaining contains a structure like the following one:
 
 <details>
 <summary>
@@ -62,6 +63,15 @@ You can also make use of the `IC` and `NER` components to compare with *baseline
 
 ## Monitoring integration
 This experiment has been integrated with Weights and Biases to track all metrics, hyperparameters, callbacks and GPU performance. You only need to adapt the parameters in the `wandb_config.json` configuration file to keep track of the model training and evaluation. An example is shown [here](https://wandb.ai/azm630/MultiTask_NLU).
+
+
+## Streamlit app deployment
+The application we introduce in `NLU_streamlit_app` is prepared to:
+
+* Load the pretrained MultiTask model checkpoint available in Weights and Biases (see previous section).
+* Show a friendly interface to write your query and confidence threshold for entity detection. At this point, it's importante to mention that the loss function for the NER branch was a Focal Loss with $\gamma=2$.
+* Make predictions in CPU. Commented lines in Dockerfile also provide the possibility to run this code in GPU.
+* `Dockerfile` to easily customise, deploy and scale this service.
 
 
 ## Quickstart code
