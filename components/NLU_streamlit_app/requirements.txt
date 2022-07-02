@@ -1,0 +1,6 @@
+torch==1.11.0
+transformers==4.20.1
+streamlit==1.10.0
+st-annotated-text==3.0.0
+pyyaml==5.4.1
+fire==0.4.0
