@@ -22,7 +22,7 @@ Information about intent and entities within utterances is contained in the data
 
 
 ## Repo structure
-The repository contains four components: `NLU_streamlit_app`, `IC`, `MultiTask` and `NER`. The first one is prepared to run a pretrained model checkpoint in a dockerised Streamlit app. Each of the remaining contains a structure like the following one:
+The repository contains four components: `NLU_streamlit_app`, `IC`, `IC_KD`, `MultiTask` and `NER`. The first one is prepared to run a pretrained model checkpoint in a dockerised Streamlit app. Each of the remaining contains a structure like the following one:
 
 <details>
 <summary>
@@ -33,7 +33,6 @@ Click here to find out!
     │   ├── dataset.py                              # Method that structures and transforms data
     │   ├── loss.py                                 # Custom function to meet our needs during training
     │   ├── model.py                                # Core script containing the architecture of the model
-    │   ├── fitter.py                               # HuggingFace custom training wrapper
     │   └── ...         
     ├── input                                       # Configuration files, datasets,...
     │   ├── info.json                               # Configuration file for datasets information

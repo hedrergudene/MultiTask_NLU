@@ -1,0 +1,23 @@
+{
+    "teacher_model":"xlm-roberta-base",
+    "teacher_checkpoint":"https://api.wandb.ai/files/azm630/MultiTask_NLU/2fhuntd7/checkpoint-2632/pytorch_model.bin?_gl=1*n1uouh*_ga*MTI3MTUyNDgzLjE2NTM4MTM1OTQ.*_ga_JH1SJHJQXJ*MTY1Nzc5Njg2Ny44Mi4xLjE2NTc3OTY4OTEuMzY.",
+    "student_model":"microsoft/Multilingual-MiniLM-L12-H384",
+    "dropout":0.25,
+    "batch_size":512,
+    "alpha_distil":0.05,
+    "epochs":4,
+    "dataloader_num_workers":4,
+    "gradient_accumulation_steps":1,
+    "learning_rate":1e-4,
+    "weight_decay":1e-3,
+    "warmup_steps_factor":2,
+    "evaluation_steps_per_epoch":2,
+    "label_smoothing":0.1,
+    "early_stopping":5,
+    "scheduler_mode":"min",
+    "verbose_steps":10,
+    "filepath":"output/",
+    "device":"cuda",
+    "fp16":0,
+    "seed":123
+}

@@ -10,14 +10,13 @@ import fire
 import numpy as np
 import pandas as pd
 import plotly_express as px
-from transformers import TrainingArguments
+from transformers import TrainingArguments, Trainer
 from sklearn.model_selection import train_test_split
 
 # Dependencies
 from src.setup import setup_data
 from src.dataset import IC_Dataset
 from src.model import IC_Model
-from src.fitter import CustomTrainer
 from src.metrics import evaluate_metrics
 from src.utils import seed_everything
 
@@ -71,7 +70,7 @@ def main(
     print(f"Prepare training arguments:")
     steps_per_epoch = int(.8*len(data))/(train_dct['batch_size']*train_dct['gradient_accumulation_steps'])
     logging_steps = steps_per_epoch if int(steps_per_epoch)==steps_per_epoch else int(steps_per_epoch)+1
-    logging_steps = logging_steps//4
+    logging_steps = logging_steps//train_dct['evaluation_steps_per_epoch']
     # Training arguments
     training_args = TrainingArguments(
         output_dir=os.path.join(os.getcwd(),train_dct['filepath']),
@@ -96,6 +95,18 @@ def main(
     )
     # Trainer
     print(f"Initialise HuggingFace Trainer:")
+    # Loss function
+    loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=train_dct['label_smoothing'])
+    # Training loop
+    class CustomTrainer(Trainer):
+        def compute_loss(self, model, inputs, return_outputs=False):
+            ic_labels = torch.squeeze(inputs.get('labels'))
+            # forward pass
+            outputs = model(inputs.get('input_ids'), inputs.get('attention_mask'))
+            # compute custom loss
+            ic_loss = loss_fn(outputs, ic_labels)
+            return (ic_loss, outputs) if return_outputs else ic_loss
+    # Initialise training object
     trainer = CustomTrainer(
         model,
         training_args,

@@ -1,0 +1,10 @@
+numpy==1.21.6
+pandas==1.3.5
+plotly-express==0.4.1
+scikit-learn==1.0.2
+torch==1.12.0
+transformers==4.20.1
+sentencepiece==0.1.96
+wandb==0.12.17
+pyyaml==5.4.1
+fire==0.4.0

@@ -1,6 +1,8 @@
+
 # Requierments
 import logging as log
 import json
+import requests
 import os
 import shutil
 import sys
@@ -15,9 +17,9 @@ from sklearn.model_selection import train_test_split
 
 # Dependencies
 from src.setup import setup_data
-from src.dataset import NER_Dataset
-from src.model import NER_Model
-from src.loss import FocalLoss
+from src.dataset import KDDataset
+from src.loss import DistilLoss
+from src.model import IC_Model, KD_IC_Model
 from src.metrics import evaluate_metrics
 from src.utils import seed_everything
 
@@ -30,10 +32,16 @@ def main(
     #
     # Part I: Read configuration files
     #
-    
+
     #Training
     with open(training_config) as f:
         train_dct = json.load(f)
+        if train_dct['teacher_checkpoint'].split('.')[-1]=='bin':
+            pass
+        else:
+            with requests.get(train_dct['teacher_checkpoint'], allow_redirects=True) as req:
+                open('input/best_teacher_checkpoint.bin', 'wb').write(req.content)
+                train_dct['teacher_checkpoint'] = 'input/best_teacher_checkpoint.bin'
         seed_everything(train_dct['seed'])
     #Wandb
     with open(wandb_config) as f:
@@ -48,23 +56,22 @@ def main(
 
     # Get tools
     print(f"Setup tools:")
-    data, nlp, ner2idx, max_length, num_labels = setup_data(train_dct)
-    train_dct['max_length'] = max_length
+    data, intent2idx, max_length, num_labels = setup_data(train_dct)
     # Filter data
     data['intent_lang'] = data['intent'] + '_' + data['language']
-    train_idx, val_idx, _, _ = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
+    train_idx, val_idx, train_intent, val_intent = train_test_split(np.arange(0,len(data)), data['intent'].values, test_size=.2, stratify=data['intent_lang'])
     # Build datasets
     log.info(f"Prepare datasets:")
-    train_dts = NER_Dataset(data.loc[train_idx,'utt'].values, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
-    val_dts = NER_Dataset(data.loc[val_idx,'utt'].values, train_dct['HuggingFace_model'], max_length, nlp, ner2idx)
+    train_dts = KDDataset(data.loc[train_idx,'utt'].values, train_intent, train_dct['teacher_model'], train_dct['student_model'], max_length, intent2idx)
+    val_dts = KDDataset(data.loc[val_idx,'utt'].values, val_intent, train_dct['teacher_model'], train_dct['student_model'], max_length, intent2idx)
     # Define model
     print(f"Get model:")
-    model = NER_Model(train_dct['HuggingFace_model'], train_dct['max_length'], num_labels, train_dct['dropout'], train_dct['device'])
+    model = KD_IC_Model(train_dct['student_model'], max_length['student'], num_labels, train_dct['dropout'], train_dct['device'])
 
     #
     # Part III: Prepare Trainer
     #
-    
+
     # Environment variables
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     # Set up arguments
@@ -80,7 +87,7 @@ def main(
         learning_rate=train_dct['learning_rate'],
         weight_decay=train_dct['weight_decay'],
         per_device_train_batch_size=train_dct['batch_size'],
-        per_device_eval_batch_size=train_dct['batch_size'],
+        per_device_eval_batch_size=2*train_dct['batch_size'],
         dataloader_num_workers = train_dct['dataloader_num_workers'],
         num_train_epochs=train_dct['epochs'],
         load_best_model_at_end=True,
@@ -95,19 +102,23 @@ def main(
         fp16=bool(train_dct['fp16'])
     )
     # Trainer
-    print(f"Initialise HuggingFace Trainer:")
-    # Loss function
-    loss_fn = FocalLoss(gamma = train_dct['gamma'], n_classes = model.num_labels)
-    # Training loop wrapper
+
+    teacher_model = IC_Model(train_dct['teacher_model'], max_length['teacher'], num_labels, train_dct['dropout'], train_dct['device'])
+    distil_loss_ic = DistilLoss(teacher_model=teacher_model, teacher_checkpoint = train_dct['teacher_checkpoint'], alpha = train_dct['alpha_distil'], n_classes = num_labels)
+
     class CustomTrainer(Trainer):
         def compute_loss(self, model, inputs, return_outputs=False):
-            ner_labels = inputs.get('labels')
+            ic_labels = torch.squeeze(inputs.get('labels'))
             # forward pass
             outputs = model(inputs.get('input_ids'), inputs.get('attention_mask'))
             # compute custom loss
-            ner_loss = loss_fn(outputs, ner_labels)
-            return (ner_loss, outputs) if return_outputs else ner_loss
-    # Initialise training loop object
+            ic_loss = distil_loss_ic({'input_ids':inputs.get('teacher_input_ids'), 'attention_mask':inputs.get('teacher_attention_mask')},
+                                     outputs,
+                                     ic_labels,
+                                     )
+            return (ic_loss, outputs) if return_outputs else ic_loss
+
+    print(f"Initialise HuggingFace Trainer:")
     trainer = CustomTrainer(
         model,
         training_args,
@@ -141,15 +152,15 @@ def main(
 
     # Log metrics
     lang_df = pd.DataFrame(lang_dct).reset_index().melt(id_vars='index')
+    
+    fig_lang_IC = px.bar(lang_df.loc[lang_df['index']=='f1_IC',:],
+                         x="variable",
+                         y="value",
+                         color="variable",
+                         title="Intent classification f1-score per language",
+                         ).update_xaxes(categoryorder='total descending')
 
-    fig_lang_NER = px.bar(lang_df.loc[lang_df['index']=='f1_NER',:],
-                          x="variable",
-                          y="value",
-                          color="variable",
-                          title="Entity recognition f1-score per language",
-                          ).update_xaxes(categoryorder='total descending')
-
-    wandb.log({"Entity recognition f1-score per language": fig_lang_NER})
+    wandb.log({"Intent classification f1-score per language": fig_lang_IC})
     wandb.log({'Global metrics':wandb.Table(data=[list(metrics_dct.values())], columns=list(metrics_dct.keys()))})
 
     # End WB session
