@@ -111,13 +111,14 @@ class IC_NER_Loss(torch.nn.Module):
     multilabel features.
     """
     def __init__(self,
+                 loss_type:str,
                  gamma:float=1.,
                  temperature:float=1.,
                  label_smoothing:float=.1,
                  from_logits:bool = True,
                  multilabel:bool= True,
                  reduction:str = 'mean',
-                 n_classes:int = None,
+                 n_classes:Dict = None,
                  class_weights:torch.Tensor=None,
                  device:str='cuda',
                  )->None:
@@ -125,12 +126,20 @@ class IC_NER_Loss(torch.nn.Module):
         Args:
         """
         super(IC_NER_Loss, self).__init__()
+        # Validations
+        assert loss_type in ['CELoss', 'FocalLoss', 'Mixed'], f"Loss type should either be 'CELoss', 'FocalLoss' or 'Mixed'."
         # Loss config settings
-        self.alpha = torch.nn.Parameter(torch.zeros((1))).to(device)
-        if class_weights==None:
-            class_weights={'IC':None, 'NER':None}
-        self.loss_ic=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights['IC'], device)
-        self.loss_ner=torch.nn.CrossEntropyLoss(ignore_index=- 100, reduction=reduction, label_smoothing=label_smoothing) # Working on implementation of 'ignore_index'
+        self.alpha = torch.nn.Parameter(torch.zeros((1)), requires_grad=True).to(device)
+        if loss_type=='CELoss':
+            self.loss_fn=torch.nn.CrossEntropyLoss(reduction=reduction, label_smoothing=label_smoothing)
+        elif loss_type=='FocalLoss':
+            self.loss_ic=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['IC'], class_weights, device)
+            self.loss_ner=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['NER'], class_weights, device)
+        else:
+            self.loss_ic=torch.nn.CrossEntropyLoss(reduction=reduction, label_smoothing=label_smoothing)
+            self.loss_ner=FocalLoss(gamma, temperature, from_logits, multilabel, reduction, n_classes['NER'], class_weights, device)
+        # Parameters
+        self.loss_type = loss_type
                     
 
     def forward(self,
@@ -150,7 +159,11 @@ class IC_NER_Loss(torch.nn.Module):
             torch.Tensor: Loss tensor. If there is any reduction, output is 0-dimensional. If there is no reduction, loss is provided
                           element-wise through the batch.
         """
-        ic_loss = self.loss_ic(input['IC'], target['IC'])
-        ner_loss = self.loss_ner(torch.permute(input['NER'], (0,2,1)), target['NER'])
+        if self.loss_type=='CELoss':
+            ic_loss = self.loss_fn(input['IC'], target['IC'])
+            ner_loss = self.loss_fn(torch.permute(input['NER'], (0,2,1)), target['NER'])
+        else:
+            ic_loss = self.loss_ic(input['IC'], target['IC'])
+            ner_loss = self.loss_ner(input['NER'], target['NER'])
         summary_loss = torch.sigmoid(self.alpha)*ic_loss + (1-torch.sigmoid(self.alpha))*ner_loss
         return {'IC':ic_loss, 'NER':ner_loss, 'summary':summary_loss}

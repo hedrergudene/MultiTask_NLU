@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import spacy
-from transformers import AutoConfig, AutoTokenizer
+from transformers import AutoTokenizer
 import logging as log
 from typing import Dict
 

@@ -51,7 +51,9 @@ As it has already been mentioned, the architecture we use combines both text and
 * Text tokenisation and entity labels are included in dataset collator for memory efficiency purposes.
 * Initial unification of hidden size to enable individualised processing of each problem.
 * Relational modules to combine IC and NER information in both directions.
-* Use of categorical crossentropy loss function for the IC branch, and focal loss function with $\gamma=2$ for the NER one. Final loss function is the average of both losses. Label smoothing for the first loss component, and gamma  parameter for the second, can be customised in the `training_config.json` file.
+* (08/2022) Custom training loop wrapper to keep track of individualised IC and NER losses.
+* Use of categorical crossentropy loss function for the IC branch, and focal loss function with $\gamma=2$ for the NER one.
+* (08/2022) Final loss function is a parametrised convex combination of both losses. Label smoothing for the first loss component, and gamma  parameter for the second, can be customised in the `training_config.json` file.
 * Simple linear decay learning rate scheduler with warm start.
 
 A visual description of the implementation is shown now:

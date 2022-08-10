@@ -5,7 +5,7 @@ import random
 import os
 
 # Set seed
-def seed_everything(seed=42):
+def seed_everything(seed=123):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)

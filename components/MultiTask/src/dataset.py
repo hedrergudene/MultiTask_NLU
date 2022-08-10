@@ -40,8 +40,10 @@ class IC_NER_Dataset(torch.utils.data.Dataset):
         # Concatenate IC and NER labels to be processed in HuggingFace trainer
         # To that end, we need to reshape NER labels from (bs, max_length, labels['NER'])
         # to (bs, max_length*labels['NER'])
-        items['labels'] = torch.cat([torch.unsqueeze(ic_labels, dim=-1), ner_labels], dim=-1)
-        return items
+        return {
+            'x':items,
+            'y':{'IC':ic_labels, 'NER':ner_labels},
+            }
 
     def _collate_spaCy_HuggingFace(self, text):
         # Build dictionaries
