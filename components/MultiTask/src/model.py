@@ -163,7 +163,7 @@ class IC_NER_Model(torch.nn.Module):
         self.hidden_size = config.hidden_size
         self.transformer = AutoModel.from_config(config).to(device)
         # Layers
-        self.LFormat = DataFormat(self.hidden_size, self.dim, dropout, device)
+        self.LFormat = DataFormat(self.hidden_size, self.dim, True, dropout, device)
         self.ic_layer = NER2IC(self.dim, max_length, self.num_labels['IC'], dropout, device)
         self.ner_layer = IC2NER(self.dim, self.num_labels['NER'], dropout, device)
     
