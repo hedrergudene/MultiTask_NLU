@@ -81,7 +81,7 @@ def main(
                                           )
     # Define model
     log.info(f"Prepare model, loss function, optimizer and scheduler")
-    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'], train_dct['device'])
     # Get loss, optimisers and schedulers
     criterion = IC_NER_Loss(loss_type=train_dct['loss_type'],
                             gamma=train_dct['gamma_loss'],
