@@ -14,7 +14,9 @@ import fire
 # Part I: Auxiliary methods
 #
 
-# Load model method
+# Load model method with decorator for app
+# to cache this step
+@st.experimental_memo
 def setup_model():
     # Set device
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
