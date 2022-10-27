@@ -118,8 +118,10 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+
 # mkdocs documentation
 /site
+components/NLU_streamlit_app/best_checkpoint.bin
 
 # mypy
 .mypy_cache/
