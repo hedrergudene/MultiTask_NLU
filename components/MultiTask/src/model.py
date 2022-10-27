@@ -179,7 +179,7 @@ class IC_NER_Model(torch.nn.Module):
         ner_output = self.ner_layer(ic_tokens, ner_tokens)
         ic_output = self.ic_layer(ic_tokens, ner_tokens)
         # Output
-        return {'IC':ic_output, 'NER':ner_output}
+        return (ic_output, ner_output)
     
     def _disentangle_transformer(self,
                                  input_ids:torch.Tensor,

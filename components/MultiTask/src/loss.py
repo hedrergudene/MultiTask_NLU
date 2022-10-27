@@ -160,10 +160,10 @@ class IC_NER_Loss(torch.nn.Module):
                           element-wise through the batch.
         """
         if self.loss_type=='CELoss':
-            ic_loss = self.loss_fn(input['IC'], target['IC'])
-            ner_loss = self.loss_fn(torch.permute(input['NER'], (0,2,1)), target['NER'])
+            ic_loss = self.loss_fn(input[0], target['IC'])
+            ner_loss = self.loss_fn(torch.permute(input[1], (0,2,1)), target['NER'])
         else:
-            ic_loss = self.loss_ic(input['IC'], target['IC'])
-            ner_loss = self.loss_ner(input['NER'], target['NER'])
+            ic_loss = self.loss_ic(input[0], target['IC'])
+            ner_loss = self.loss_ner(input[1], target['NER'])
         summary_loss = torch.sigmoid(self.alpha)*ic_loss + (1-torch.sigmoid(self.alpha))*ner_loss
         return {'IC':ic_loss, 'NER':ner_loss, 'summary':summary_loss}

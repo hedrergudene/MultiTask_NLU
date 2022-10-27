@@ -2,6 +2,7 @@
 # Requirements
 from typing import Dict, List
 import torch
+import logging as log
 from transformers import AutoConfig, AutoModel
 
 # Utils

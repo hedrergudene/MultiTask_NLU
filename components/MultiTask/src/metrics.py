@@ -22,8 +22,8 @@ def evaluate_metrics(model, train_dct, val_dtl, language_arr):
         # Get output
         with torch.no_grad():
             output = model(**batch)
-        ic_output = torch.argmax(output['IC'], dim=-1).detach().cpu().numpy()
-        ner_output = torch.argmax(output['NER'], dim=-1).detach().cpu().numpy()
+        ic_output = torch.argmax(output[0], dim=-1).detach().cpu().numpy()
+        ner_output = torch.argmax(output[1], dim=-1).detach().cpu().numpy()
         # Decode NER arrays
         ner_labels = np.vectorize(idx2ner.get)(ner_labels)
         ner_output = np.vectorize(idx2ner.get)(ner_output)

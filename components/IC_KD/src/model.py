@@ -1,4 +1,3 @@
-
 # Requirements
 import logging as log
 from typing import Dict, List
