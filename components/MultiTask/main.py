@@ -148,7 +148,7 @@ def main(
     # Load best checkpoint
     log.info("Loading best model checkpoint:")
     ckpt = torch.load(os.path.join(os.getcwd(),train_dct['filepath'],'best-checkpoint.bin'))
-    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'], train_dct['device'])
     model.load_state_dict(ckpt['model_state_dict'])
     # Calculate metrics
     log.info("Compute metrics on evaluation dataset:")
