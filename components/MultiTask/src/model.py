@@ -131,7 +131,10 @@ class IC2NER(torch.nn.Module):
         Returns:
             torch.Tensor: Output for NER classifier
         """
-        return self.Lblock_post(ner_tokens)
+        ic_tokens = torch.unsqueeze(torch.mean(ic_tokens, dim=1, keepdim=True), dim=-1)
+        ner_output = ner_tokens*ic_tokens
+        ner_output = self.Lblock(ner_output)
+        return ner_output
 
 
 # Model
