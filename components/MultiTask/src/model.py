@@ -129,7 +129,7 @@ class IC2NER(torch.nn.Module):
         """
         ic_tokens = torch.unsqueeze(torch.mean(ic_tokens, dim=1, keepdim=True), dim=-1)
         ner_output = ner_tokens*ic_tokens
-        ner_output = self.Lblock(ner_output)
+        ner_output = self.Lblock_post(ner_output)
         return ner_output
 
 
