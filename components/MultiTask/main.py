@@ -199,7 +199,6 @@ def main(
 
     log.debug("Compute metrics on test dataset with quantized model:")
     metrics_dct_quant, lang_dct_quant = evaluate_metrics_ONNX(ort_sess_quant, val_dtl, language_arr)
-    metrics_dct_quant = {k+'_test_quant':v for k,v in metrics_dct_quant.items()}
 
     # Log metrics
     lang_df = pd.DataFrame(lang_dct_quant).reset_index().melt(id_vars='index')
@@ -220,7 +219,7 @@ def main(
 
     wandb.log({"Intent classification f1-score per language (quantized)": fig_lang_IC})
     wandb.log({"Entity recognition f1-score per language (quantized)": fig_lang_NER})
-    wandb.log({'Global metrics (quantized)':wandb.Table(data=[list(metrics_dct.values())], columns=list(metrics_dct.keys()))})
+    wandb.log({'Global metrics (quantized)':wandb.Table(data=[list(metrics_dct_quant.values())], columns=list(metrics_dct_quant.keys()))})
 
     # Move best checkpoint to Weights and Biases root directory to be saved
     log.info(f"Move best checkpoint to Weights and Biases root directory to be saved:")
