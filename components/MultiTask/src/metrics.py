@@ -3,25 +3,24 @@ from .utils import *
 import numpy as np
 from tqdm import tqdm
 import logging as log
-import time
 from sklearn.metrics import accuracy_score, f1_score
 import torch
 
 
 def evaluate_metrics_ONNX(ort_sess, dtl, language_arr):
     # Setup
-    idx2ner = {v:k for k,v in dtl.dataset.tag2idx.items()}
+    idx2ner = {v:k for k,v in dtl.dataset.ner2idx.items()}
     IC_LABELS, IC_OUTPUT, NER_LABELS, NER_OUTPUT = [], [], [], []
     # Create loop with custom metrics
-    start_ts = time.time()
+    log.info("Stack predictions:")
     for batch in tqdm(iter(dtl)):
         # Get labels
         ic_labels = torch.squeeze(batch['y']['IC']).detach().cpu().numpy()
         ner_labels = batch['y']['NER'].detach().cpu().numpy()
         # Get output
         outputs = ort_sess.run(None, {k:v.numpy() for k,v in batch.get('x').items()})[0]
-        ic_output = torch.argmax(outputs[0], dim=-1).detach().cpu().numpy()
-        ner_output = torch.argmax(outputs[1], dim=-1).detach().cpu().numpy()
+        ic_output = np.argmax(outputs[0], dim=-1)
+        ner_output = np.argmax(outputs[1], dim=-1)
         # Decode NER arrays
         ner_labels = np.vectorize(idx2ner.get)(ner_labels)
         ner_output = np.vectorize(idx2ner.get)(ner_output)

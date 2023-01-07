@@ -32,6 +32,7 @@ def convert_ONNX(max_length:int, model:torch.nn.Module, output_path:str):
          do_constant_folding=True,                      # whether to execute constant folding for optimization 
          input_names = ['input_ids', 'attention_mask'], # the model's input names 
          output_names = ['ic_output', 'ner_output'],    # the model's output names 
+         operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK, # https://github.com/facebookresearch/fairseq/issues/3395
          dynamic_axes={                                 # variable length axes 
              'input_ids' : {0 : 'batch_size'},    
              'attention_mask' : {0 : 'batch_size'},

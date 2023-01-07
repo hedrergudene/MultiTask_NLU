@@ -6,7 +6,7 @@ spacy[cuda113]==3.3
 torch==1.13.1
 transformers==4.25.1
 onnx==1.13.0
-onnxruntime==1.13.1
+onnxruntime-gpu==1.13.1
 wandb==0.12.21
 pyyaml==5.4.1
 fire==0.4.0
