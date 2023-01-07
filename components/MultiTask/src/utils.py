@@ -13,6 +13,31 @@ def seed_everything(seed=123):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
+# Method to Convert to ONNX 
+def convert_ONNX(max_length:int, model:torch.nn.Module, output_path:str): 
+    # set the model to inference mode 
+    model.to(torch.device('cpu'))
+    model.eval()
+
+    # Let's create a dummy input tensor
+    dummy_input_1 = torch.randint(0, 2, (1, max_length))
+    dummy_input_2 = torch.randint(0, 2, (1, max_length))
+
+    # Export the model   
+    torch.onnx.export(model,                            # model being run 
+         (dummy_input_1, dummy_input_2),                # model input (or a tuple for multiple inputs) 
+         output_path,                                   # where to save the model  
+         export_params=True,                            # store the trained parameter weights inside the model file 
+         opset_version=14,                              # the ONNX version to export the model to 
+         do_constant_folding=True,                      # whether to execute constant folding for optimization 
+         input_names = ['input_ids', 'attention_mask'], # the model's input names 
+         output_names = ['ic_output', 'ner_output'],    # the model's output names 
+         dynamic_axes={                                 # variable length axes 
+             'input_ids' : {0 : 'batch_size'},    
+             'attention_mask' : {0 : 'batch_size'},
+             'ic_output' : {0 : 'batch_size'},
+			 'ner_output' : {0 : 'batch_size'},
+             })
 
 # Method to ensemble NER outputs into one
 def convert_tags(tag, original_idxs):

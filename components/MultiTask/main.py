@@ -11,6 +11,9 @@ import numpy as np
 import pandas as pd
 import plotly_express as px
 from sklearn.model_selection import train_test_split
+import onnx
+import onnxruntime as ort
+from onnxruntime.quantization import quantize_dynamic, QuantType
 
 # Dependencies
 from src.setup import setup_data
@@ -19,8 +22,8 @@ from src.model import IC_NER_Model
 from src.loss import IC_NER_Loss
 from src.fitter import IC_NER_Fitter
 from src.callbacks import wandb_checkpoint
-from src.metrics import evaluate_metrics
-from src.utils import seed_everything
+from src.metrics import evaluate_metrics, evaluate_metrics_ONNX
+from src.utils import seed_everything, convert_ONNX
 
 # Setup logs
 root = log.getLogger()
@@ -81,7 +84,8 @@ def main(
                                           )
     # Define model
     log.info(f"Prepare model, loss function, optimizer and scheduler")
-    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'])
+    model.to(torch.device(train_dct['device']))
     # Get loss, optimisers and schedulers
     criterion = IC_NER_Loss(loss_type=train_dct['loss_type'],
                             gamma=train_dct['gamma_loss'],
@@ -148,8 +152,9 @@ def main(
     # Load best checkpoint
     log.info("Loading best model checkpoint:")
     ckpt = torch.load(os.path.join(os.getcwd(),train_dct['filepath'],'best-checkpoint.bin'))
-    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'], train_dct['device'])
+    model = IC_NER_Model(train_dct['HuggingFace_model'], num_labels, train_dct['max_length'], train_dct['dim'], train_dct['dropout'])
     model.load_state_dict(ckpt['model_state_dict'])
+    model.to(torch.device(train_dct['device']))
     # Calculate metrics
     log.info("Compute metrics on evaluation dataset:")
     metrics_dct, lang_dct = evaluate_metrics(model, train_dct, val_dtl, language_arr)
@@ -178,6 +183,49 @@ def main(
     # Move best checkpoint to Weights and Biases root directory to be saved
     log.info(f"Move best checkpoint to Weights and Biases root directory to be saved:")
     os.replace(f"{train_dct['filepath']}/best-checkpoint.bin", f"{wandb.run.dir}/best-checkpoint.bin")
+
+    #
+    # Part VI: Evaluation quantized model
+    #
+
+    # Load best checkpoint
+    log.info("Convert model to ONNX and quantize:")
+    convert_ONNX(train_dct['max_length'], model, os.path.join(train_dct['filepath'], 'ckpt.onnx'))
+    quantize_dynamic(os.path.join(train_dct['filepath'], 'ckpt.onnx'), os.path.join(train_dct['filepath'], 'ckpt.quant.onnx'), weight_type=QuantType.QInt8)
+    # Start ORT inference session
+    log.debug(f"Start ORT inference session:")
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if torch.cuda.is_available() else ['CPUExecutionProvider']
+    ort_sess_quant = ort.InferenceSession(os.path.join(train_dct['filepath'], 'ckpt.quant.onnx'), providers=providers)
+
+    log.debug("Compute metrics on test dataset with quantized model:")
+    metrics_dct_quant, lang_dct_quant = evaluate_metrics_ONNX(ort_sess_quant, val_dtl, language_arr)
+    metrics_dct_quant = {k+'_test_quant':v for k,v in metrics_dct_quant.items()}
+
+    # Log metrics
+    lang_df = pd.DataFrame(lang_dct_quant).reset_index().melt(id_vars='index')
+    
+    fig_lang_IC = px.bar(lang_df.loc[lang_df['index']=='f1_weighted_IC',:],
+                         x="variable",
+                         y="value",
+                         color="variable",
+                         title="Intent classification weighted f1-score per language",
+                         ).update_xaxes(categoryorder='total descending')
+
+    fig_lang_NER = px.bar(lang_df.loc[lang_df['index']=='f1_NER',:],
+                          x="variable",
+                          y="value",
+                          color="variable",
+                          title="Entity recognition f1-score per language",
+                          ).update_xaxes(categoryorder='total descending')
+
+    wandb.log({"Intent classification f1-score per language (quantized)": fig_lang_IC})
+    wandb.log({"Entity recognition f1-score per language (quantized)": fig_lang_NER})
+    wandb.log({'Global metrics (quantized)':wandb.Table(data=[list(metrics_dct.values())], columns=list(metrics_dct.keys()))})
+
+    # Move best checkpoint to Weights and Biases root directory to be saved
+    log.info(f"Move best checkpoint to Weights and Biases root directory to be saved:")
+    os.replace(f"{train_dct['filepath']}/ckpt.quant.onnx", f"{wandb.run.dir}/ckpt.quant.onnx")
+
     # End W&B session
     wandb.finish()
    

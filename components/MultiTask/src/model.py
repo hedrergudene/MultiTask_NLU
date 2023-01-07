@@ -16,20 +16,19 @@ class LinearBlock(torch.nn.Module):
                  input_dim:int,
                  output_dim:int,
                  activation:bool=True,
-                 dropout:float=.25,
-                 device:str='cuda:0',
+                 dropout:float=.25
                  )->None:
         super(LinearBlock, self).__init__()
         # Parameters
         if activation:
             self.block = torch.nn.Sequential(torch.nn.Dropout(dropout),
-                                             torch.nn.Linear(input_dim, output_dim, device=device),
-                                             torch.nn.LayerNorm(output_dim, device=device),
+                                             torch.nn.Linear(input_dim, output_dim),
+                                             torch.nn.LayerNorm(output_dim),
                                              torch.nn.GELU(),
                                             )
         else:
             self.block = torch.nn.Sequential(torch.nn.Dropout(dropout),
-                                             torch.nn.Linear(input_dim, output_dim, device=device),
+                                             torch.nn.Linear(input_dim, output_dim),
                                             )
 
     def forward(self, x:torch.Tensor)->torch.Tensor:
@@ -45,13 +44,12 @@ class DataFormat(torch.nn.Module):
     def __init__(self,
                  hidden_size:int,
                  dim:int,
-                 dropout:float=.25,
-                 device:str='cuda:0',
+                 dropout:float=.25
                  )->None:
         super(DataFormat, self).__init__()
         # Parameters
-        self.Lblock_ic = LinearBlock(hidden_size, dim, True, dropout, device)
-        self.Lblock_ner = LinearBlock(hidden_size, dim, True, dropout, device)
+        self.Lblock_ic = LinearBlock(hidden_size, dim, True, dropout)
+        self.Lblock_ner = LinearBlock(hidden_size, dim, True, dropout)
     
     def forward(self, ic_tokens:torch.Tensor, ner_tokens:torch.Tensor)->torch.Tensor:
         """Standardisation module in which hidden_size is transformed into 'dim' length.
@@ -79,12 +77,11 @@ class NER2IC(torch.nn.Module):
                  max_length:int,
                  num_labels_ic:int,
                  dropout:float=.25,
-                 device:str='cuda:0',
                  ):
         super(NER2IC, self).__init__()
         # Parameters
-        self.Lblock_prior = LinearBlock(dim, dim//2, True, dropout, device)
-        self.Lblock_post = LinearBlock(dim//2, num_labels_ic, True, dropout, device)
+        self.Lblock_prior = LinearBlock(dim, dim//2, True, dropout)
+        self.Lblock_post = LinearBlock(dim//2, num_labels_ic, True, dropout)
     
     def forward(self, ic_tokens:torch.Tensor, ner_tokens:torch.Tensor)->torch.Tensor:
         """Information sharing module. NER tokens are averaged 'horizontally' to be combined with
@@ -113,13 +110,12 @@ class IC2NER(torch.nn.Module):
     def __init__(self,
                  dim:int,
                  num_labels_ner:int,
-                 dropout:float=.25,
-                 device:str='cuda:0',
+                 dropout:float=.25
                  )->None:
         super(IC2NER, self).__init__()
         # Parameters
         self.dim = dim
-        self.Lblock_post = LinearBlock(self.dim, num_labels_ner, True, dropout, device)
+        self.Lblock_post = LinearBlock(self.dim, num_labels_ner, True, dropout)
     
     def forward(self, ic_tokens:torch.Tensor, ner_tokens:torch.Tensor)->torch.Tensor:
         """Information sharing module. IC tokens are...
@@ -144,8 +140,7 @@ class IC_NER_Model(torch.nn.Module):
                  num_labels:Dict,
                  max_length:int,
                  dim:int=256,
-                 dropout:float=.25,
-                 device:str='cuda:0',
+                 dropout:float=.25
                  )->None:
         super(IC_NER_Model, self).__init__()
         # Parameters
@@ -164,11 +159,11 @@ class IC_NER_Model(torch.nn.Module):
             }
         )
         self.hidden_size = config.hidden_size
-        self.transformer = AutoModel.from_config(config).to(device)
+        self.transformer = AutoModel.from_config(config)
         # Layers
-        self.LFormat = DataFormat(self.hidden_size, self.dim, dropout, device)
-        self.ic_layer = NER2IC(self.dim, max_length, self.num_labels['IC'], dropout, device)
-        self.ner_layer = IC2NER(self.dim, self.num_labels['NER'], dropout, device)
+        self.LFormat = DataFormat(self.hidden_size, self.dim, dropout)
+        self.ic_layer = NER2IC(self.dim, max_length, self.num_labels['IC'], dropout)
+        self.ner_layer = IC2NER(self.dim, self.num_labels['NER'], dropout)
     
     def forward(self,
                 input_ids:torch.Tensor,
