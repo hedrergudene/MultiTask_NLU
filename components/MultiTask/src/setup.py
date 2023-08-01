@@ -27,7 +27,26 @@ def setup_data(train_dct:Dict,
             f.write(response.raw.read())
     # Extract files in input directory
     with tarfile.open('input/amazon-massive-dataset-1.0.tar.gz') as f:
-      f.extractall('input/')
+      def is_within_directory(directory, target):
+          
+          abs_directory = os.path.abspath(directory)
+          abs_target = os.path.abspath(target)
+      
+          prefix = os.path.commonprefix([abs_directory, abs_target])
+          
+          return prefix == abs_directory
+      
+      def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+      
+          for member in tar.getmembers():
+              member_path = os.path.join(path, member.name)
+              if not is_within_directory(path, member_path):
+                  raise Exception("Attempted Path Traversal in Tar File")
+      
+          tar.extractall(path, members, numeric_owner=numeric_owner) 
+          
+      
+      safe_extract(f, "input/")
     os.remove('input/amazon-massive-dataset-1.0.tar.gz')
     # Create a dicitonary to gather all entities
     utterances = []
